@@ -1,0 +1,14 @@
+# Compiled object files
+*.o
+
+# Executables
+*.exe
+*.out
+
+# Build directories
+build/
+meson-private/
+
+# VScode
+.vscode/
+.vscode-ctags
