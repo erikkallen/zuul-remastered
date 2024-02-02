@@ -2,6 +2,7 @@
 #include <SDL2/SDL_image.h>
 #include "draw.h"
 #include "structs.h"
+#include "player.h"
 
 void draw_prepare_scene(App * app)
 {
@@ -29,13 +30,15 @@ int draw_load_texture(App * app, struct TextureImage * texture)
 	return 0;
 }
 
-void draw_blit_texture(App * app, struct TextureImage *texture, int x, int y)
+void draw_blit_texture(App * app, struct Entity *entity)
 {
 	SDL_Rect dest;
+	SDL_Rect *src = player_get_current_frame(entity);
 
-	dest.x = x;
-	dest.y = y;
-	SDL_QueryTexture(texture->texture, NULL, NULL, &dest.w, &dest.h);
+	dest.x = entity->x;
+	dest.y = entity->y;
+	dest.w = src->w;
+	dest.h = src->h;
 
-	SDL_RenderCopy(app->renderer, texture->texture, NULL, &dest);
+	SDL_RenderCopy(app->renderer, entity->texture.texture, src, &dest);
 }

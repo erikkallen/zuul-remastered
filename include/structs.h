@@ -14,7 +14,8 @@ typedef struct
 struct TextureImage
 {
     char filename[MAX_FILENAME_LENGTH];
-    SDL_Rect rect;
+    SDL_Rect *frames;
+    int current_frame;
     SDL_Texture *texture;
     struct TextureImage *next;
 };

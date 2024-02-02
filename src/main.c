@@ -47,28 +47,27 @@ int main(int argc, char* argv[]) {
     App app = {0};
     struct Entity player;
     long then;
-	float remainder;
+	float remainder = 0;
 
     log_info("Starting up...");
     // Init SDL
     init_sdl(&app);
-    init_player(&app, &player);
+    player_init(&app, &player);
 
     then = SDL_GetTicks();
-
-	remainder = 0;
     
     while (1) {
         draw_prepare_scene(&app);
         input_handle(&app);
-        handle_player(&app, &player);
-        draw_blit_texture(&app, &player.texture, player.x, player.y);
+        player_handle(&app, &player);
+        draw_blit_texture(&app, &player);
         draw_present_scene(&app);
         capFrameRate(&then, &remainder);
     }
 
     SDL_DestroyRenderer(app.renderer);
     SDL_DestroyWindow(app.window);
+    player_Quit(&player);
     IMG_Quit();
     SDL_Quit();
 
