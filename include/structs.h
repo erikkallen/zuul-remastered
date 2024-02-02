@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "defs.h"
+#include "input.h"
 
 #ifndef ENTITY_H
 #define ENTITY_H
@@ -10,20 +11,25 @@ typedef struct
     int data[MAP_WIDTH][MAP_HEIGHT];
 } Map;
 
-struct AtlasImage
+struct TextureImage
 {
     char filename[MAX_FILENAME_LENGTH];
     SDL_Rect rect;
     SDL_Texture *texture;
-    struct AtlasImage *next;
+    struct TextureImage *next;
 };
 
 struct Entity
 {
     int x;
     int y;
+    int width;
+    int height;
+    float dx;
+    float dy;
+    int health;
     int facing;
-    struct AtlasImage *texture;
+    struct TextureImage texture;
     struct Entity *next;
 };
 
@@ -40,6 +46,7 @@ typedef struct
     SDL_Renderer *renderer;
     SDL_Surface *surface;
     SDL_Event event;
+    int keyboard[MAX_KEYBOARD_KEYS];
 } App;
 
 #endif

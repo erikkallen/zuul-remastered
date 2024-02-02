@@ -4,4 +4,6 @@
 #define MAP_WIDTH 32
 #define MAP_HEIGHT 32
 
+#define PLAYER_SPEED 4
+
 #define MAX_FILENAME_LENGTH 256

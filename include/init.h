@@ -3,6 +3,6 @@
 
 #include "structs.h"
 
-void initSDL(App *app);
+void init_sdl(App *app);
 
 #endif
