@@ -6,11 +6,6 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
-typedef struct
-{
-    int data[MAP_WIDTH][MAP_HEIGHT];
-} Map;
-
 struct TextureImage
 {
     char filename[MAX_FILENAME_LENGTH];
@@ -36,13 +31,6 @@ struct Entity
     struct TextureImage texture;
     struct Entity *next;
 };
-
-typedef struct
-{
-    SDL_Point renderOffset;
-    struct Entity entityHead, *entityTail;
-    Map map;
-} Dungeon;
 
 typedef struct
 {

@@ -1,11 +1,8 @@
-#define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 720
+#define SCREEN_WIDTH 1920
+#define SCREEN_HEIGHT 1080
 
 #define SPRITE_WIDTH 128
 #define SPRITE_HEIGHT 128
-
-#define MAP_WIDTH 32
-#define MAP_HEIGHT 32
 
 #define PLAYER_SPEED 4
 

@@ -15,6 +15,7 @@
 #include "init.h"
 #include "input.h"
 #include "player.h"
+#include "map.h"
 
 // Logging
 #include <log.h>
@@ -45,6 +46,7 @@ static void capFrameRate(long *then, float *remainder)
 
 int main(int argc, char* argv[]) {
     App app = {0};
+    Map map = {0};
     struct Entity player;
     long then;
 	float remainder = 0;
@@ -53,11 +55,13 @@ int main(int argc, char* argv[]) {
     // Init SDL
     init_sdl(&app);
     player_init(&app, &player);
+    map_init(&app, &map);
 
     then = SDL_GetTicks();
     
     while (1) {
         draw_prepare_scene(&app);
+        map_draw(&app, &map);
         input_handle(&app);
         player_handle(&app, &player);
         draw_blit_texture(&app, &player);
@@ -67,7 +71,8 @@ int main(int argc, char* argv[]) {
 
     SDL_DestroyRenderer(app.renderer);
     SDL_DestroyWindow(app.window);
-    player_Quit(&player);
+    player_free(&player);
+    map_free(&map);
     IMG_Quit();
     SDL_Quit();
 

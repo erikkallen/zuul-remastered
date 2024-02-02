@@ -1,3 +1,6 @@
 [submodule "lib/log.c"]
 	path = lib/log.c
 	url = https://github.com/rxi/log.c.git
+[submodule "lib/hshg"]
+	path = lib/hshg
+	url = https://github.com/supahero1/hshg.git

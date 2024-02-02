@@ -70,6 +70,7 @@ SDL_Rect * player_get_current_frame(struct Entity * player) {
     return frame;
 }
 
-void player_Quit(struct Entity * player) {
+void player_free(struct Entity * player) {
     free(player->texture.frames);
+    SDL_DestroyTexture(player->texture.texture);
 }
