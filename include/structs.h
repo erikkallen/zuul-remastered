@@ -17,6 +17,8 @@ struct TextureImage
     SDL_Rect *frames;
     int current_frame;
     SDL_Texture *texture;
+    int animation_speed;
+    int frame_offset;
     struct TextureImage *next;
 };
 
@@ -30,6 +32,7 @@ struct Entity
     float dy;
     int health;
     int facing;
+    int move_speed;
     struct TextureImage texture;
     struct Entity *next;
 };
@@ -48,6 +51,7 @@ typedef struct
     SDL_Surface *surface;
     SDL_Event event;
     int keyboard[MAX_KEYBOARD_KEYS];
+    int key_pressed;
 } App;
 
 #endif

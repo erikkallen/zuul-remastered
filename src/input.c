@@ -11,6 +11,7 @@ static void input_on_key_down(App * app)
 		if (event->repeat == 0 && event->keysym.scancode < MAX_KEYBOARD_KEYS)
         {
             app->keyboard[event->keysym.scancode] = 1;
+			app->key_pressed = event->keysym.scancode;
         }
 	}
 }
@@ -23,6 +24,7 @@ static void input_on_key_up(App * app)
 		if (event->repeat == 0 && event->keysym.scancode < MAX_KEYBOARD_KEYS)
         {
             app->keyboard[event->keysym.scancode] = 0;
+			app->key_pressed = 0;
         }
 	}
 }
