@@ -7,3 +7,5 @@
 #define PLAYER_SPEED 4
 
 #define MAX_FILENAME_LENGTH 256
+
+#define MAX_KEYBOARD_KEYS 350

@@ -7,6 +7,7 @@
 #include "defs.h"
 #include "draw.h"
 #include "map.h"
+#include "tileset.h"
 
 // Logging
 #include <log.h>
@@ -15,17 +16,11 @@
 #define MAP_TILE_WIDTH 64
 #define MAP_TILE_HEIGHT 64
 #define MAP_ANIMATION_FRAMES 2
-// Bits on the far end of the 32-bit global tile ID are used for tile flags
-#define FLIPPED_HORIZONTALLY_FLAG  0x80000000
-#define FLIPPED_VERTICALLY_FLAG    0x40000000
-#define FLIPPED_DIAGONALLY_FLAG    0x20000000
-#define ROTATED_HEXAGONAL_120_FLAG 0x10000000
-#define TILE_FLAG_MASK  0xf0000000
-#define TILE_ID_MASK    0x0fffffff
 
-int map_load(App * app, Map * map) {
+
+int map_load(App * app, Map * map, const char *filename) {
     // Read map file into buffer
-    FILE *fp = fopen("../assets/home.tmj", "r");
+    FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
         log_error("Failed to open map file");
         exit(1);
@@ -141,7 +136,7 @@ int map_load(App * app, Map * map) {
             // Read flags
             new_layer->data[tile_index].flags = global_tile_id & TILE_FLAG_MASK;
             new_layer->data[tile_index].id = (global_tile_id & TILE_ID_MASK);
-            log_debug("Tile id: %d flags: %x gid: %u", new_layer->data[tile_index].id, new_layer->data[tile_index].flags, global_tile_id);
+            // log_debug("Tile id: %d flags: %x gid: %u", new_layer->data[tile_index].id, new_layer->data[tile_index].flags, global_tile_id);
             tile_index++;
         }
         // Move pointer to next layer
@@ -184,113 +179,10 @@ example data
  "version":"1.10"
 }
 */
-void map_tiles_load(App * app, Map * map) {
-    // Read map file into buffer
-    FILE *fp = fopen("../assets/tiles.tsj", "r");
-    if (fp == NULL) {
-        log_error("Failed to open map file");
-        exit(1);
-    }
-    fseek(fp, 0, SEEK_END);
-    long fsize = ftell(fp);
-    fseek(fp, 0, SEEK_SET);  /* same as rewind(f); */
 
-    char *string = malloc(fsize + 1);
-    fread(string, fsize, 1, fp);
-    fclose(fp);
-
-    string[fsize] = 0;
-
-    // Load json map data
-    cJSON *tile_json = cJSON_Parse(string);
-    const cJSON *tile_width = NULL;
-    const cJSON *tile_height = NULL;
-    const cJSON *image = NULL;
-    const cJSON *tilecount = NULL;
-    const cJSON *columns = NULL;
-    const cJSON *image_height = NULL;
-    const cJSON *image_width = NULL;
-    const cJSON *spacing = NULL;
-    const cJSON *margin = NULL;
-    const cJSON *name = NULL;
-
-    tile_width = cJSON_GetObjectItemCaseSensitive(tile_json, "tilewidth");
-    if (!cJSON_IsNumber(tile_width)) {
-        log_error("Failed to parse tile width");
-        exit(1);
-    }
-    tile_height = cJSON_GetObjectItemCaseSensitive(tile_json, "tileheight");
-    if (!cJSON_IsNumber(tile_height)) {
-        log_error("Failed to parse tile height");
-        exit(1);
-    }
-    image = cJSON_GetObjectItemCaseSensitive(tile_json, "image");
-    if (!cJSON_IsString(image)) {
-        log_error("Failed to parse image");
-        exit(1);
-    }
-    tilecount = cJSON_GetObjectItemCaseSensitive(tile_json, "tilecount");
-    if (!cJSON_IsNumber(tilecount)) {
-        log_error("Failed to parse tilecount");
-        exit(1);
-    }
-    columns = cJSON_GetObjectItemCaseSensitive(tile_json, "columns");
-    if (!cJSON_IsNumber(columns)) {
-        log_error("Failed to parse columns");
-        exit(1);
-    }
-    image_height = cJSON_GetObjectItemCaseSensitive(tile_json, "imageheight");
-    if (!cJSON_IsNumber(image_height)) {
-        log_error("Failed to parse imageheight");
-        exit(1);
-    }
-    image_width = cJSON_GetObjectItemCaseSensitive(tile_json, "imagewidth");
-    if (!cJSON_IsNumber(image_width)) {
-        log_error("Failed to parse imagewidth");
-        exit(1);
-    }
-    spacing = cJSON_GetObjectItemCaseSensitive(tile_json, "spacing");
-    if (!cJSON_IsNumber(spacing)) {
-        log_error("Failed to parse spacing");
-        exit(1);
-    }
-    margin = cJSON_GetObjectItemCaseSensitive(tile_json, "margin");
-    if (!cJSON_IsNumber(margin)) {
-        log_error("Failed to parse margin");
-        exit(1);
-    }
-    name = cJSON_GetObjectItemCaseSensitive(tile_json, "name");
-    if (!cJSON_IsString(name)) {
-        log_error("Failed to parse name");
-        exit(1);
-    }
-
-    strcpy(map->texture.filename, "../assets/");
-    strcat(map->texture.filename, image->valuestring);
-    log_info("Loaded tileset name: %s, tile width: %d, tile height: %d, tilecount: %d file: %s size: %d bytes", name->valuestring, tile_width->valueint, tile_height->valueint, tilecount->valueint, map->texture.filename, fsize);
-
-    map->texture.frames = malloc(sizeof(SDL_Rect) * tilecount->valueint);
-    for(int i = 0; i < tilecount->valueint; i++) {
-        map->texture.frames[i].x = 0;
-        map->texture.frames[i].y = i * tile_height->valueint;
-        map->texture.frames[i].w = tile_width->valueint;
-        map->texture.frames[i].h = tile_height->valueint;
-    }
-    map->texture.animation_speed = 250;
-    int rc = draw_load_texture(app, &map->texture);
-    if (rc != 0) {
-        log_error("Failed to load texture");
-        exit(1);
-    }
-
-    
-    cJSON_Delete(tile_json);
-    free(string);
-}
-
-void map_init(App *app, Map * map) {
-    map_tiles_load(app, map);
-    map_load(app, map);
+void map_init(App *app, Map * map, Tileset * tileset, const char *filename) {
+    map->tileset = tileset;
+    map_load(app, map, filename);
 }
 
 void map_draw_layer(App * app, Map * map, Layer * layer) {
@@ -310,7 +202,13 @@ void map_draw_layer(App * app, Map * map, Layer * layer) {
             // Convert to local tile index TODO make work for multiple tilesets
             uint32_t tile_id = layer->data[tile_index].id - 1;
             // log_debug("Drawing tile %d", tile_id);
-            SDL_Rect *src = &map->texture.frames[tile_id];
+            Frame * frames = map->tileset->tile_image.frames;
+            Frame * frame = &map->tileset->tile_image.frames[tile_id];
+            SDL_Texture *texture = map->tileset->tile_image.texture;
+            SDL_Rect * src = &frame->frame;
+            if (frame->animation != NULL) {
+                src = &frames[tileset_get_animation_frame_id(frame)].frame;
+            }
             dest.x = i * map->tile_width;
             dest.y = j * map->tile_height;
             dest.w = map->tile_width;
@@ -328,14 +226,12 @@ void map_draw_layer(App * app, Map * map, Layer * layer) {
                 flip |= SDL_FLIP_VERTICAL;
             }
 
-            SDL_RenderCopyEx(app->renderer, map->texture.texture, src, &dest, 0, NULL, flip);
+            SDL_RenderCopyEx(app->renderer, texture, src, &dest, 0, NULL, flip);
         }
     }
 }
 
 void map_draw(App * app, Map * map) {
-    //int ticks = SDL_GetTicks();
-    // int sprite = (ticks / map->texture.animation_speed) % MAP_ANIMATION_FRAMES;
     // Loop thourgh all layers and draw tiles
     // log_debug("Drawing map %p", map->layer);
     Layer * current_layer = map->layer;
@@ -354,6 +250,4 @@ void map_free(Map * map) {
         free(current_layer);
         current_layer = next_layer;
     }
-    free(map->texture.frames);
-    SDL_DestroyTexture(map->texture.texture);
 }

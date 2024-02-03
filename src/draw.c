@@ -15,11 +15,11 @@ void draw_present_scene(App * app)
 	SDL_RenderPresent(app->renderer);
 }
 
-int draw_load_texture(App * app, struct TextureImage * texture)
+int draw_load_texture(App * app, struct TextureImage * texture, const char * filename)
 {
-	SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Loading %s", texture->filename);
+	SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Loading %s", filename);
 
-	texture->texture = IMG_LoadTexture(app->renderer, texture->filename);
+	texture->texture = IMG_LoadTexture(app->renderer, filename);
         
 	if (texture->texture == NULL)
 	{
@@ -30,15 +30,15 @@ int draw_load_texture(App * app, struct TextureImage * texture)
 	return 0;
 }
 
-void draw_blit_texture(App * app, struct Entity *entity)
-{
-	SDL_Rect dest;
-	SDL_Rect *src = player_get_current_frame(entity);
+// void draw_blit_texture(App * app, struct Entity *entity)
+// {
+// 	SDL_Rect dest;
+// 	SDL_Rect *src = player_get_current_frame(entity);
 
-	dest.x = entity->x;
-	dest.y = entity->y;
-	dest.w = src->w;
-	dest.h = src->h;
+// 	dest.x = entity->x;
+// 	dest.y = entity->y;
+// 	dest.w = src->w;
+// 	dest.h = src->h;
 
-	SDL_RenderCopy(app->renderer, entity->texture.texture, src, &dest);
-}
+// 	SDL_RenderCopy(app->renderer, entity->texture.texture, src, &dest);
+// }
