@@ -243,7 +243,7 @@ void map_draw(App * app, Map * map) {
         for (int j = 0; j < map->height; j++) {
             SDL_Rect dest;
             uint32_t tile_id = map->data[i+(j*map->width)];
-            log_debug("Drawing tile %d", tile_id);
+            // log_debug("Drawing tile %d", tile_id);
             SDL_Rect *src = &map->texture.frames[tile_id+sprite];
             dest.x = i * map->tile_width;
             dest.y = j * map->tile_height;

@@ -6,8 +6,8 @@ base_dir = meson.current_source_dir()
 incdir = include_directories('include', 'lib/log.c/src', 'lib/hshg/c')
 
 sdl2_dep = dependency('sdl2')
-sdl2_image_dep = dependency('sdl2_image')
-sdl2_ttf_dep = dependency('sdl2_ttf')
+sdl2_image_dep = dependency('SDL2_image')
+sdl2_ttf_dep = dependency('SDL2_ttf')
 cjson_dep = dependency('libcjson')
 
 sources = files('src/main.c', 'lib/log.c/src/log.c', 'src/draw.c', 'src/init.c', 'src/input.c', 'src/player.c', 'src/map.c', 'lib/hshg/c/hshg.c')
