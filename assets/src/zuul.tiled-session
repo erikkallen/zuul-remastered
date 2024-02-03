@@ -3,17 +3,18 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "/home/erikkallen/Projects/erik/zuul/assets/home.tmj",
     "expandedProjectPaths": [
+        "/home/erikkallen/Projects/erik/zuul/assets"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "/home/erikkallen/Projects/erik/zuul/assets/home.tmj": {
-            "scale": 0.52138671875,
+            "scale": 2,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 1018.4379097209215,
-                "y": 1018.4379097209215
+                "x": 623.5,
+                "y": 312
             }
         },
         "/home/erikkallen/Projects/erik/zuul/assets/tiles.tsj": {
@@ -37,11 +38,13 @@
     "map.tileWidth": 64,
     "map.width": 32,
     "openFiles": [
+        "/home/erikkallen/Projects/erik/zuul/assets/tiles.tsj",
+        "/home/erikkallen/Projects/erik/zuul/assets/home.tmj"
     ],
     "project": "zuul.tiled-project",
     "recentFiles": [
-        "/home/erikkallen/Projects/erik/zuul/assets/tiles.tsj",
         "/home/erikkallen/Projects/erik/zuul/assets/home.tmj",
+        "/home/erikkallen/Projects/erik/zuul/assets/tiles.tsj",
         "home.tmj"
     ],
     "tileset.lastUsedFormat": "json",
