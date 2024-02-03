@@ -238,7 +238,7 @@ void map_init(App *app, Map * map) {
 
 void map_draw(App * app, Map * map) {
     int ticks = SDL_GetTicks();
-    int sprite = (ticks / map->texture.animation_speed) % MAP_ANIMATION_FRAMES;
+    int sprite = 0;//(ticks / map->texture.animation_speed) % MAP_ANIMATION_FRAMES;
     for (int i = 0; i < map->width; i++) {
         for (int j = 0; j < map->height; j++) {
             SDL_Rect dest;
