@@ -55,6 +55,7 @@
         "/home/erikkallen/Projects/erik/zuul/assets/map_tiles.tsj"
     ],
     "project": "zuul.tiled-project",
+    "property.type": "int",
     "recentFiles": [
         "/home/erikkallen/Projects/erik/zuul/assets/home.tmj",
         "/home/erikkallen/Projects/erik/zuul/assets/player_tiles.tsj",

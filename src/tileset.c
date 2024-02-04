@@ -110,38 +110,40 @@ void tileset_load(App * app, Tileset * tileset, const char * filename) {
             exit(1);
         }
         const cJSON * j_animation = cJSON_GetObjectItemCaseSensitive(j_tile, "animation");
-        if (!cJSON_IsArray(j_animation)) {
-            log_error("Failed to parse tile animation");
-            continue;
-        }
-        // Allocate animation memory
-        tileset->tile_image.frames[j_id->valueint].animation = calloc(1, sizeof(Animation));
-        if (tileset->tile_image.frames[j_id->valueint].animation == NULL) {
-            log_error("Failed to allocate animation memory");
-            exit(1);
-        }
-        // Allocate meory for animation frames
-        tileset->tile_image.frames[j_id->valueint].animation->frames = calloc(cJSON_GetArraySize(j_animation), sizeof(AnimationFrame));
-        tileset->tile_image.frames[j_id->valueint].animation->num_frames = cJSON_GetArraySize(j_animation);
-        const cJSON *j_tile_a = NULL;
-        size_t animation_index = 0;
-        cJSON_ArrayForEach(j_tile_a, j_animation) {
-            const cJSON *j_duration = NULL;
-            const cJSON *j_tileid = NULL;
-            j_duration = cJSON_GetObjectItemCaseSensitive(j_tile_a, "duration");
-            if (!cJSON_IsNumber(j_duration)) {
-                log_error("Failed to parse tile duration");
+        // Handle animation
+        if (cJSON_IsArray(j_animation)) {
+            // Allocate animation memory
+            tileset->tile_image.frames[j_id->valueint].animation = calloc(1, sizeof(Animation));
+            if (tileset->tile_image.frames[j_id->valueint].animation == NULL) {
+                log_error("Failed to allocate animation memory");
                 exit(1);
             }
-            j_tileid = cJSON_GetObjectItemCaseSensitive(j_tile_a, "tileid");
-            if (!cJSON_IsNumber(j_tileid)) {
-                log_error("Failed to parse tile tileid");
-                exit(1);
+            // Allocate meory for animation frames
+            tileset->tile_image.frames[j_id->valueint].animation->frames = calloc(cJSON_GetArraySize(j_animation), sizeof(AnimationFrame));
+            tileset->tile_image.frames[j_id->valueint].animation->num_frames = cJSON_GetArraySize(j_animation);
+            const cJSON *j_tile_a = NULL;
+            size_t animation_index = 0;
+            cJSON_ArrayForEach(j_tile_a, j_animation) {
+                const cJSON *j_duration = NULL;
+                const cJSON *j_tileid = NULL;
+                j_duration = cJSON_GetObjectItemCaseSensitive(j_tile_a, "duration");
+                if (!cJSON_IsNumber(j_duration)) {
+                    log_error("Failed to parse tile duration");
+                    exit(1);
+                }
+                j_tileid = cJSON_GetObjectItemCaseSensitive(j_tile_a, "tileid");
+                if (!cJSON_IsNumber(j_tileid)) {
+                    log_error("Failed to parse tile tileid");
+                    exit(1);
+                }
+                tileset->tile_image.frames[j_id->valueint].animation->frames[animation_index].tileid = j_tileid->valueint;
+                tileset->tile_image.frames[j_id->valueint].animation->frames[animation_index].duration = j_duration->valueint;
+                animation_index++;
             }
-            tileset->tile_image.frames[j_id->valueint].animation->frames[animation_index].tileid = j_tileid->valueint;
-            tileset->tile_image.frames[j_id->valueint].animation->frames[animation_index].duration = j_duration->valueint;
-            animation_index++;
         }
+
+        const cJSON *j_type = cJSON_GetObjectItemCaseSensitive(j_tile, "type");
+        // Handle type
     }
 
     log_info("Loaded tileset name: %s, tile width: %d, tile height: %d, tilecount: %d file: %s size: %d bytes", j_name->valuestring, j_tile_width->valueint, j_tile_height->valueint, j_tilecount->valueint, filename, fsize);
