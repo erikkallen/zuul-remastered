@@ -186,9 +186,35 @@ void map_init(App *app, Map * map, Tileset * tileset, const char *filename) {
 }
 
 void map_draw_layer(App * app, Map * map, Layer * layer) {
+    // Calculate start and end col and row pased on camera position
+    int32_t start_col = app->camera->x / map->tile_width;
+    int32_t start_row = app->camera->y / map->tile_height;
+    int32_t end_col = start_col + (app->camera->width / map->tile_width) + 1;
+    int32_t end_row = start_row + (app->camera->height / map->tile_height) + 1;
+
+    uint32_t offset_x = -app->camera->x + start_col * map->tile_width;
+    uint32_t offset_y = -app->camera->y + start_row * map->tile_height;
+    // Check map bound and adjust end col and row
+    if (end_col > layer->width) {
+        end_col = layer->width;
+        offset_x = 0;
+    }
+    if (end_row > layer->height) {
+        end_row = layer->height;
+        offset_y = 0;
+    }
+    if (start_col < 0) {
+        start_col = 0;
+        offset_x = 0;
+    }
+    if (start_row < 0) {
+        start_row = 0;
+        offset_y = 0;
+    }
     // log_debug("Drawing layer w: %d h: %d p: %p, data_p: %p", layer->width, layer->height, layer, layer->data);
-    for (int i = 0; i < layer->width; i++) {
-        for (int j = 0; j < layer->height; j++) {
+    log_debug("Drawing layer start_col: %d end_col: %d start_row: %d end_row: %d", start_col, end_col, start_row, end_row);
+    for (int i = start_col; i < end_col; i++) {
+        for (int j = start_row; j < end_row; j++) {
             SDL_Rect dest;
             uint32_t tile_index = i+(j*layer->width);
             if (tile_index > layer->width * layer->height) {
@@ -209,8 +235,8 @@ void map_draw_layer(App * app, Map * map, Layer * layer) {
             if (frame->animation != NULL) {
                 src = &frames[tileset_get_animation_frame_id(frame)].frame;
             }
-            dest.x = i * map->tile_width;
-            dest.y = j * map->tile_height;
+            dest.x = (i - start_col) * map->tile_width + offset_x;
+            dest.y = (j - start_row) * map->tile_height + offset_y;
             dest.w = map->tile_width;
             dest.h = map->tile_height;
             SDL_RendererFlip flip = SDL_FLIP_NONE;

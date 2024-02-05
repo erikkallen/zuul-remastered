@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <SDL2/SDL.h>
+#include <stdbool.h>
 
 #include "defs.h"
 #include "app.h"
@@ -15,15 +16,24 @@
 #define TILE_FLAG_MASK 0xf0000000
 #define TILE_ID_MASK 0x0fffffff
 
-typedef struct AnimationFrame AnimationFrame;
+/**
+ * https://doc.mapeditor.org/en/stable/reference/json-map-format
+ */
+
+typedef enum TileType
+{
+    TILE_TYPE_WATER,
+    TILE_TYPE_IMAGE,
+    TILE_TYPE_OBJECT
+} TileType;
+
 typedef struct AnimationFrame
 {
     int tileid;
     int duration;
-    AnimationFrame *next;
+    struct AnimationFrame *next;
 } AnimationFrame;
 
-typedef struct Animation Animation;
 typedef struct Animation
 {
     int num_frames;
@@ -37,16 +47,15 @@ typedef struct Animation
     AnimationFrame *frames;
 } Animation;
 
-typedef struct Frame Frame;
 typedef struct Frame
 {
+    TileType type;
     SDL_Rect frame;
     Animation *animation;
-    Frame *next;
+    struct Frame *next;
 } Frame;
 
 // Forward declaration of textureimage
-typedef struct TextureImage TextureImage;
 typedef struct TextureImage
 {
     char filename[MAX_FILENAME_LENGTH];
@@ -54,16 +63,57 @@ typedef struct TextureImage
     Frame *frames;
     int current_frame;
     SDL_Texture *texture;
-    TextureImage *next;
+    struct TextureImage *next;
 } TextureImage;
 
-typedef struct Tileset Tileset;
+typedef struct Property
+{
+    char *name;
+    char *propertytype;
+    char *type;
+    union
+    {
+        char *string_value;
+        int int_value;
+        double float_value;
+        bool bool_value;
+        char *color_value;
+        char *file_value;
+        int object_value;
+    };
+} Property;
+
+// Still deciding on how to best parse/render this
+// typedef struct Tile
+// {
+//     char *image; // Optional
+
+//     int id;
+//     int imageheight;
+//     int imagewidth;
+//     int x;
+//     int y;
+//     int width;
+//     int height;
+
+//     double probability; // Optional
+
+//     size_t animation_count;
+//     Frame *animation;
+
+//     int terrain[4]; // Optional
+
+//     size_t property_count;
+//     Property *properties;
+// } Tile;
+
 typedef struct Tileset
 {
     uint32_t first_gid;
     char name[MAX_FILENAME_LENGTH];
     uint32_t columns;
     uint32_t rows;
+
     uint32_t tile_width;
     uint32_t tile_height;
     uint32_t tile_image_width;
@@ -71,8 +121,10 @@ typedef struct Tileset
     uint32_t spacing;
     uint32_t margin;
     uint32_t num_tiles;
+
+    // Tile *tiles;
     TextureImage tile_image;
-    Tileset *next;
+    struct Tileset *next;
 } Tileset;
 
 void tileset_load(App *app, Tileset *tileset, const char *filename);

@@ -144,6 +144,11 @@ void tileset_load(App * app, Tileset * tileset, const char * filename) {
 
         const cJSON *j_type = cJSON_GetObjectItemCaseSensitive(j_tile, "type");
         // Handle type
+        if (cJSON_IsString(j_type)) {
+            if (strcmp(j_type->valuestring, "water") == 0) {
+                tileset->tile_image.frames[j_id->valueint].type = TILE_TYPE_WATER;
+            }
+        }
     }
 
     log_info("Loaded tileset name: %s, tile width: %d, tile height: %d, tilecount: %d file: %s size: %d bytes", j_name->valuestring, j_tile_width->valueint, j_tile_height->valueint, j_tilecount->valueint, filename, fsize);

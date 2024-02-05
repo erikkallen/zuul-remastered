@@ -4,15 +4,11 @@
 #include "structs.h"
 #include "player.h"
 
-void draw_prepare_scene(App * app)
+void draw_prepare_scene(App * app, SDL_Texture * target)
 {
+	SDL_SetRenderTarget(app->renderer, target);
 	SDL_SetRenderDrawColor(app->renderer, 96, 128, 255, 255);
 	SDL_RenderClear(app->renderer);
-}
-
-void draw_present_scene(App * app)
-{
-	SDL_RenderPresent(app->renderer);
 }
 
 int draw_load_texture(App * app, struct TextureImage * texture, const char * filename)
@@ -20,25 +16,43 @@ int draw_load_texture(App * app, struct TextureImage * texture, const char * fil
 	SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Loading %s", filename);
 
 	texture->texture = IMG_LoadTexture(app->renderer, filename);
-        
-	if (texture->texture == NULL)
-	{
-		SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "IMG_LoadTexture Error: %s\n", SDL_GetError());
-		return 1;
-	}
+	SDL_assert(texture->texture);
 
 	return 0;
 }
 
-// void draw_blit_texture(App * app, struct Entity *entity)
-// {
-// 	SDL_Rect dest;
-// 	SDL_Rect *src = player_get_current_frame(entity);
+Camera make_camera(App *app, int width, int height) {
+    Camera camera = {
+        .renderer = app->renderer,
+        .x = 0,
+        .y = 0,
+        .width = width,
+        .height = height,
+        .target_width = width + CAMERA_BORDER * 2,
+        .target_height = height + CAMERA_BORDER * 2,
+    };
+    camera.target = SDL_CreateTexture(app->renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET,
+                                      camera.target_width, camera.target_height);
+    SDL_assert(camera.target);
+    SDL_SetTextureBlendMode(camera.target, SDL_BLENDMODE_BLEND);
 
-// 	dest.x = entity->x;
-// 	dest.y = entity->y;
-// 	dest.w = src->w;
-// 	dest.h = src->h;
+    return camera;
+}
 
-// 	SDL_RenderCopy(app->renderer, entity->texture.texture, src, &dest);
-// }
+void draw_camera_to_screen(App *app, Camera *camera) {
+        //
+        // Draw camera texture
+        //
+        float pixel_h = (float)SCREEN_HEIGHT / camera->height;
+        float correction_x = (int)camera->x - camera->x;
+        float correction_y = (int)camera->y - camera->y;
+
+        SDL_Rect dst;
+        dst.x = correction_x * pixel_h - pixel_h * CAMERA_BORDER;
+        dst.y = correction_y * pixel_h - pixel_h * CAMERA_BORDER;
+        dst.w = camera->target_width * pixel_h;
+        dst.h = camera->target_height * pixel_h;
+
+        SDL_RenderCopy(app->renderer, camera->target, NULL, &dst);
+		SDL_RenderPresent(app->renderer);
+}

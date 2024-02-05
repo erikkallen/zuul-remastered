@@ -71,14 +71,21 @@ int main(int argc, char* argv[]) {
     map_init(&app, &map, &map_tiles, "../assets/home.tmj");
 
     then = SDL_GetTicks();
+    //Camera camera = make_camera(&app, SCREEN_WIDTH, SCREEN_HEIGHT);
+    Camera camera = make_camera(&app, 1280, 720);
+    app.camera = &camera;
     
     while (1) {
-        draw_prepare_scene(&app);
-        map_draw(&app, &map);
+        draw_prepare_scene(&app, camera.target);
         input_handle(&app);
-        player_handle(&app, &player);
+        player_handle(&app, &map, &camera, &player);
+        map_draw(&app, &map);
         player_draw(&app, &player);
-        draw_present_scene(&app);
+        // Debug camera position
+        //log_debug("Camera x: %f, y: %f", camera.x, camera.y);
+        // Screen
+        draw_prepare_scene(&app, NULL);
+        draw_camera_to_screen(&app, &camera);
         capFrameRate(&then, &remainder);
     }
 

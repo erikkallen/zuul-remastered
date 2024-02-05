@@ -8,8 +8,7 @@
 // Logging
 #include <log.h>
 
-#define SPRITE_NUM_FRAMES 8
-#define ANIMATION_FRAMES 2
+#define PLAYER_BORDER_DISTANCE 10
 int player_init(App * app, struct Entity * player, Tileset * tileset) {
     player->x = 100;
     player->y = 100;
@@ -19,21 +18,25 @@ int player_init(App * app, struct Entity * player, Tileset * tileset) {
     return 0;
 }
 
-void player_handle(App * app, struct Entity * player) {
+void player_handle(App * app, Map * map, Camera *camera, struct Entity * player) {
     if (app->keyboard[SDL_SCANCODE_UP]) {
-        player->y -= PLAYER_SPEED;
+        player->dy -= PLAYER_SPEED;
+        //camera->y -= PLAYER_SPEED;
         player->facing = PLAYER_FACING_UP;
     }
     if (app->keyboard[SDL_SCANCODE_DOWN]) {
-        player->y += PLAYER_SPEED;
+        player->dy += PLAYER_SPEED;
+        //camera->y += PLAYER_SPEED;
         player->facing = PLAYER_FACING_DOWN;
     }
     if (app->keyboard[SDL_SCANCODE_LEFT]) {
-        player->x -= PLAYER_SPEED;
+        player->dx -= PLAYER_SPEED;
+        //camera->x -= PLAYER_SPEED;
         player->facing = PLAYER_FACING_LEFT;
     }
     if (app->keyboard[SDL_SCANCODE_RIGHT]) {
-        player->x += PLAYER_SPEED;
+        player->dx += PLAYER_SPEED;
+        //camera->x += PLAYER_SPEED;
         player->facing = PLAYER_FACING_RIGHT;
     }
     if (app->keyboard[SDL_SCANCODE_RIGHT] || app->keyboard[SDL_SCANCODE_LEFT] || app->keyboard[SDL_SCANCODE_UP] || app->keyboard[SDL_SCANCODE_DOWN]) {
@@ -41,20 +44,101 @@ void player_handle(App * app, struct Entity * player) {
     } else{
         player->move_speed = 0;
     }
+    // Keep player in the center of the camera until the camera hits the edge of the map
+    // camera->x += player->dx;
+    // camera->y += player->dy;
+    if (camera->x <= 0) {
+        camera->x = 0;
+        if (player->dx < 0) {
+            // Move left
+            player->x += player->dx;
+        } else {
+            // Move right
+            if (player->x <= (camera->width/2) - (player->width/2)) {
+                player->x += player->dx;
+            } else {
+                camera->x += player->dx;
+            }
+        }
+    } else if (camera->x >= (map->width * map->tile_width) - camera->width) {
+        camera->x = (map->width * map->tile_width) - camera->width;
+        if (player->dx > (camera->width/2) - (player->width/2)) {
+            // Move right
+            player->x += player->dx;
+        } else {
+            // Move left
+            if (player->x >= (camera->width/2) - (player->width/2)) {
+                player->x += player->dx;
+            } else {
+                camera->x += player->dx;
+            }
+        }
+    } else {
+        camera->x += player->dx;
+    }
+    if (camera->y <= 0) {
+        camera->y = 0;
+        if (player->dy < 0) {
+            // Move up
+            player->y += player->dy;
+        } else {
+            // Move down
+            if (player->y <= (camera->height/2) - (player->height/2)) {
+                player->y += player->dy;
+            } else {
+                camera->y += player->dy;
+            }
+        }
+    } else if (camera->y >= (map->height * map->tile_height) - camera->height) {
+        camera->y = (map->height * map->tile_height) - camera->height;
+        if (player->dy > (camera->height/2) - (player->height/2)) {
+            // Move down
+            player->y += player->dy;
+        } else {
+            // Move up
+            if (player->y >= (camera->height/2) - (player->height/2)) {
+                player->y += player->dy;
+            } else {
+                camera->y += player->dy;
+            }
+        }
+    } else {
+        camera->y += player->dy;
+    }
+    // Debug camera position
+    log_debug("Camera x: %d y: %d", camera->x, camera->y);
+    // Debug player position
+    log_debug("Player x: %d y: %d", player->x, player->y);
+
+
+
+    // Prevent player from moving outside of map
+    if (player->x < 0) {
+        player->x = 0;
+    }
+    if (player->y < 0) {
+        player->y = 0;
+    }
+    if (player->x > camera->width - player->width) {
+        player->x = camera->width - player->width;
+    }
+    if (player->y > camera->height - player->height) {
+        player->y = camera->height - player->height;
+    }
+
     // player->x += player->dx;
     // player->y += player->dy;
-}
+    // Debug player position
+    log_debug("Player x: %d y: %d", player->x, player->y);
+    // camera->x = camera->width;
 
-// SDL_Rect * player_get_current_frame(struct Entity * player) {
-//     SDL_Rect * frame = &player->texture.frames[player->texture.current_frame];
-//     int ticks = SDL_GetTicks();
-//     int sprite = (ticks / player->texture.animation_speed) % ANIMATION_FRAMES;
-//     if (player->move_speed == 0) {
-//         sprite = 0;
-//     }
-//     player->texture.current_frame = player->texture.frame_offset + sprite;//(player->texture.current_frame + 1) % SPRITE_NUM_FRAMES;
-//     return frame;
-// }
+    // Move camera if player gets close to edge but stop if camera hits map border
+
+
+    // Reset player dx and dy
+    player->dx = 0;
+    player->dy = 0;
+}
 
 void player_draw(App * app, struct Entity *entity)
 {

@@ -9,11 +9,11 @@ void init_sdl(App * app)
 {
 	int rendererFlags, windowFlags;
 
-	rendererFlags = SDL_RENDERER_ACCELERATED;
+	rendererFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
 
 	windowFlags = 0;
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0)
 	{
 		log_error("Couldn't initialize SDL: %s\n", SDL_GetError());
 		exit(1);
@@ -26,20 +26,10 @@ void init_sdl(App * app)
 	}
 
 	app->window = SDL_CreateWindow("Shooter 01", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, windowFlags);
-
-	if (!app->window)
-	{
-		log_error("Failed to open %d x %d window: %s\n", SCREEN_WIDTH, SCREEN_HEIGHT, SDL_GetError());
-		exit(1);
-	}
+	SDL_assert(app->window);
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-
+	SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
 	app->renderer = SDL_CreateRenderer(app->window, -1, rendererFlags);
-
-	if (!app->renderer)
-	{
-		log_error("Failed to create renderer: %s\n", SDL_GetError());
-		exit(1);
-	}
+	SDL_assert(app->renderer);
 }

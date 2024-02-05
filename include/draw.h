@@ -2,10 +2,12 @@
 #define DRAW_H
 
 #include "structs.h"
+#include "app.h"
 
-void draw_prepare_scene(App *app);
-void draw_present_scene(App *app);
+#define CAMERA_BORDER 1
+
+Camera make_camera(App *app, int width, int height);
+void draw_prepare_scene(App *app, SDL_Texture *target);
 int draw_load_texture(App *app, struct TextureImage *image, const char *filename);
-void draw_blit_texture(App *app, struct Entity *entity);
-
+void draw_camera_to_screen(App *app, Camera *camera);
 #endif
