@@ -95,7 +95,7 @@ void tileset_load(App * app, Tileset * tileset, const char * filename) {
     strcpy(tileset->name, j_name->valuestring);
 
     // Allocate tile memory
-    tileset->tile_image.frames = malloc(sizeof(Frame) * tileset->num_tiles);
+    tileset->tile_image.frames = calloc(tileset->num_tiles, sizeof(Frame));
     if (tileset->tile_image.frames == NULL) {
         log_error("Failed to allocate tile memory");
         exit(1);
