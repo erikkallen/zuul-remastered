@@ -189,8 +189,11 @@ void map_draw_layer(App * app, Map * map, Layer * layer) {
     // Calculate start and end col and row pased on camera position
     int32_t start_col = app->camera->x / map->tile_width;
     int32_t start_row = app->camera->y / map->tile_height;
-    int32_t end_col = start_col + (app->camera->width / map->tile_width) + 1;
-    int32_t end_row = start_row + (app->camera->height / map->tile_height) + 1;
+    int32_t end_col = start_col + ceil(app->camera->width / map->tile_width) + 1;
+    int32_t end_row = start_row + ceil(app->camera->height / map->tile_height) + 2;
+    if (end_row > layer->height) {
+        end_row = layer->height;
+    }
 
     uint32_t offset_x = -app->camera->x + start_col * map->tile_width;
     uint32_t offset_y = -app->camera->y + start_row * map->tile_height;

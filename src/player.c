@@ -106,7 +106,7 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
         camera->y += player->dy;
     }
     // Debug camera position
-    log_debug("Camera x: %d y: %d", camera->x, camera->y);
+    log_debug("Camera x: %f y: %f", camera->x, camera->y);
     // Debug player position
     log_debug("Player x: %d y: %d", player->x, player->y);
 

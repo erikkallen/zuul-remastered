@@ -15,7 +15,7 @@ typedef struct
     int target_width;
     int target_height;
 
-    int x, y;
+    float x, y;
 } Camera;
 typedef struct
 {
