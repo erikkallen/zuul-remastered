@@ -46,9 +46,8 @@ static void capFrameRate(long *then, float *remainder)
 }
 
 int main(int argc, char* argv[]) {
-    Tileset map_tiles = {0};
-    Tileset player_tiles = {0};
     App app = {0};
+
     Map map = {0};
     struct Entity player;
     long then;
@@ -65,10 +64,11 @@ int main(int argc, char* argv[]) {
     // Init SDL
     init_sdl(&app);
     // Init tilesets
-    tileset_load(&app, &map_tiles, "../assets/map_tiles.tsj");
-    tileset_load(&app, &player_tiles, "../assets/player_tiles.tsj");
-    player_init(&app, &player, &player_tiles);
-    map_init(&app, &map, &map_tiles, "../assets/home.tmj");
+    Tileset * map_tiles = tileset_load(&app, "../assets/map_tiles.tsj");
+    Tileset * player_tiles = tileset_load(&app, "../assets/player_tiles.tsj");
+    
+    player_init(&app, &player, player_tiles);
+    map_init(&app, &map, map_tiles, "../assets/home.tmj");
 
     then = SDL_GetTicks();
     //Camera camera = make_camera(&app, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -81,8 +81,6 @@ int main(int argc, char* argv[]) {
         player_handle(&app, &map, &camera, &player);
         map_draw(&app, &map);
         player_draw(&app, &player);
-        // Debug camera position
-        //log_debug("Camera x: %f, y: %f", camera.x, camera.y);
         // Screen
         draw_prepare_scene(&app, NULL);
         draw_camera_to_screen(&app, &camera);
@@ -92,8 +90,8 @@ int main(int argc, char* argv[]) {
     SDL_DestroyRenderer(app.renderer);
     SDL_DestroyWindow(app.window);
     player_free(&player);
-    tileset_free(&player_tiles);
-    tileset_free(&map_tiles);
+    tileset_free(player_tiles);
+    tileset_free(map_tiles);
     map_free(&map);
     IMG_Quit();
     SDL_Quit();

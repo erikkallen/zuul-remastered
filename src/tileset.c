@@ -7,8 +7,15 @@
 
 // Logging
 #include <log.h>
+/*
+* Load a tileset from a json file and return a pointer to the loaded tileset
+* 
+* @param filename The filename of the tileset json file
+* @return A pointer to the loaded tileset
 
-void tileset_load(App * app, Tileset * tileset, const char * filename) {
+*/
+Tileset * tileset_load(App * app, const char * filename) {
+    Tileset * tileset = calloc(1, sizeof(Tileset));
     // Read map file into buffer
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
@@ -93,117 +100,242 @@ void tileset_load(App * app, Tileset * tileset, const char * filename) {
     tileset->spacing = j_spacing->valueint;
     tileset->columns = j_columns->valueint;
     strcpy(tileset->name, j_name->valuestring);
-
+    log_debug("Tileset columns: %d", tileset->columns);
     // Allocate tile memory
-    tileset->tile_image.frames = malloc(sizeof(Frame) * tileset->num_tiles);
-    if (tileset->tile_image.frames == NULL) {
+    tileset->tiles = calloc(tileset->num_tiles, sizeof(Tile));
+    if (tileset->tiles == NULL) {
         log_error("Failed to allocate tile memory");
         exit(1);
     }
-    tileset->tile_image.num_frames = tileset->num_tiles;
-
     const cJSON *j_tile = NULL;
+    int tile_index = 0;
     cJSON_ArrayForEach(j_tile, j_tiles) {
+        Tile * tile = &tileset->tiles[tile_index];
         const cJSON * j_id = cJSON_GetObjectItemCaseSensitive(j_tile, "id");
         if (!cJSON_IsNumber(j_id)) {
             log_error("Failed to parse tile id");
             exit(1);
         }
+        log_debug("Loading tile id: %d", j_id->valueint);
+        tile->id = j_id->valueint;
+        const cJSON * j_image = cJSON_GetObjectItemCaseSensitive(j_tile, "image");
+        if (cJSON_IsString(j_image)) {
+            tile->image = calloc(strlen(j_image->valuestring) + 1, sizeof(char));
+            strcpy(tile->image, j_image->valuestring);
+        }
+
+        const cJSON * j_imageheight = cJSON_GetObjectItemCaseSensitive(j_tile, "imageheight");
+        if (cJSON_IsNumber(j_imageheight)) {
+            tile->imageheight = j_imageheight->valueint;
+        }
+        const cJSON * j_imagewidth = cJSON_GetObjectItemCaseSensitive(j_tile, "imagewidth");
+        if (cJSON_IsNumber(j_imagewidth)) {
+            tile->imagewidth = j_imagewidth->valueint;
+        }
+        const cJSON * j_type = cJSON_GetObjectItemCaseSensitive(j_tile, "type");
+        if (cJSON_IsString(j_type)) {
+            tile->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
+            strcpy(tile->type, j_type->valuestring);
+        }
+        const cJSON * j_properties = cJSON_GetObjectItemCaseSensitive(j_tile, "properties");
+        if (cJSON_IsArray(j_properties)) {
+            tile->property_count = cJSON_GetArraySize(j_properties);
+            tile->properties = calloc(tile->property_count, sizeof(Property));
+            const cJSON * j_property = NULL;
+            int property_index = 0;
+            cJSON_ArrayForEach(j_property, j_properties) {
+                Property * property = &tile->properties[property_index];
+                const cJSON * j_name = cJSON_GetObjectItemCaseSensitive(j_property, "name");
+                if (!cJSON_IsString(j_name)) {
+                    log_error("Failed to parse tile property name");
+                    exit(1);
+                }
+                property->name = calloc(strlen(j_name->valuestring) + 1, sizeof(char));
+                strcpy(property->name, j_name->valuestring);
+
+                const cJSON * j_type = cJSON_GetObjectItemCaseSensitive(j_property, "type");
+                if (!cJSON_IsString(j_type)) {
+                    log_error("Failed to parse tile property type");
+                    exit(1);
+                }
+                property->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
+                strcpy(property->type, j_type->valuestring);
+
+                const cJSON * j_propertytype = cJSON_GetObjectItemCaseSensitive(j_property, "propertytype");
+                if (cJSON_IsString(j_propertytype)) {
+                    property->propertytype = calloc(strlen(j_propertytype->valuestring) + 1, sizeof(char));
+                    strcpy(property->propertytype, j_propertytype->valuestring);
+                }
+                
+
+                const cJSON * j_value = cJSON_GetObjectItemCaseSensitive(j_property, "value");
+                if (cJSON_IsString(j_value)) {
+                    property->string_value = calloc(strlen(j_value->valuestring) + 1, sizeof(char));
+                    strcpy(property->string_value, j_value->valuestring);
+                } else if (cJSON_IsNumber(j_value)) {
+                    property->int_value = j_value->valueint;
+                    property->float_value = j_value->valuedouble;
+                } else if (cJSON_IsBool(j_value)) {
+                    property->bool_value = j_value->valueint;
+                } else {
+                    log_warn("Property type not supported");
+                } 
+                property_index++;
+            }
+        }
+
         const cJSON * j_animation = cJSON_GetObjectItemCaseSensitive(j_tile, "animation");
         // Handle animation
         if (cJSON_IsArray(j_animation)) {
             // Allocate animation memory
-            tileset->tile_image.frames[j_id->valueint].animation = calloc(1, sizeof(Animation));
-            if (tileset->tile_image.frames[j_id->valueint].animation == NULL) {
+            tile->animation_count = cJSON_GetArraySize(j_animation);
+            tile->animation = calloc(tile->animation_count, sizeof(Frame));
+            if (tile->animation == NULL) {
                 log_error("Failed to allocate animation memory");
                 exit(1);
             }
-            // Allocate meory for animation frames
-            tileset->tile_image.frames[j_id->valueint].animation->frames = calloc(cJSON_GetArraySize(j_animation), sizeof(AnimationFrame));
-            tileset->tile_image.frames[j_id->valueint].animation->num_frames = cJSON_GetArraySize(j_animation);
-            const cJSON *j_tile_a = NULL;
+
+            const cJSON *j_frame = NULL;
             size_t animation_index = 0;
-            cJSON_ArrayForEach(j_tile_a, j_animation) {
-                const cJSON *j_duration = NULL;
-                const cJSON *j_tileid = NULL;
-                j_duration = cJSON_GetObjectItemCaseSensitive(j_tile_a, "duration");
+            cJSON_ArrayForEach(j_frame, j_animation) {
+                Frame * frame = &tile->animation[animation_index];
+                const cJSON *j_duration = cJSON_GetObjectItemCaseSensitive(j_frame, "duration");
                 if (!cJSON_IsNumber(j_duration)) {
                     log_error("Failed to parse tile duration");
                     exit(1);
                 }
-                j_tileid = cJSON_GetObjectItemCaseSensitive(j_tile_a, "tileid");
+                const cJSON *j_tileid = cJSON_GetObjectItemCaseSensitive(j_frame, "tileid");
                 if (!cJSON_IsNumber(j_tileid)) {
                     log_error("Failed to parse tile tileid");
                     exit(1);
                 }
-                tileset->tile_image.frames[j_id->valueint].animation->frames[animation_index].tileid = j_tileid->valueint;
-                tileset->tile_image.frames[j_id->valueint].animation->frames[animation_index].duration = j_duration->valueint;
+                frame->duration = j_duration->valueint;
+                frame->tileid = j_tileid->valueint;
                 animation_index++;
             }
         }
-
-        const cJSON *j_type = cJSON_GetObjectItemCaseSensitive(j_tile, "type");
-        // Handle type
-        if (cJSON_IsString(j_type)) {
-            if (strcmp(j_type->valuestring, "water") == 0) {
-                tileset->tile_image.frames[j_id->valueint].type = TILE_TYPE_WATER;
-            }
-        }
+        tile_index++;
     }
 
     log_info("Loaded tileset name: %s, tile width: %d, tile height: %d, tilecount: %d file: %s size: %d bytes", j_name->valuestring, j_tile_width->valueint, j_tile_height->valueint, j_tilecount->valueint, filename, fsize);
     tileset->rows = tileset->num_tiles / tileset->columns;
-
-    // Set up frames
-    for (int i = 0; i < tileset->columns; i++) {
-        for (int j = 0; j < tileset->rows; j++) {
-            tileset->tile_image.frames[i+(j*tileset->columns)].frame.x = i * tileset->tile_width;
-            tileset->tile_image.frames[i+(j*tileset->columns)].frame.y = j * tileset->tile_height;
-            tileset->tile_image.frames[i+(j*tileset->columns)].frame.w =     tileset->tile_width;
-            tileset->tile_image.frames[i+(j*tileset->columns)].frame.h =     tileset->tile_height;
-        }
-    }
-    char tileset_path[strlen(app->assets_path) + strlen(j_image->valuestring) + 1];
-    strcpy(tileset_path, app->assets_path);
-    strcat(tileset_path, j_image->valuestring);
-    int rc = draw_load_texture(app, &tileset->tile_image, tileset_path);
-    if (rc != 0) {
-        log_error("Failed to load texture");
-        exit(1);
-    }
-
+    // Load tileset texture
+    char texture_path[256];
+    strcpy(texture_path, app->assets_path);
+    strcat(texture_path, j_image->valuestring);
+    log_info("Loading tileset texture: %s", j_image->valuestring);
+    tileset->texture = IMG_LoadTexture(app->renderer, texture_path);
+    SDL_assert(tileset->texture != NULL);
     
     cJSON_Delete(tile_json);
     free(string);
+    return tileset;
 }
 
-uint32_t tileset_get_animation_frame_id(Frame * frame) {
-    uint32_t duration = frame->animation->frames[frame->animation->current_frame].duration;
+static uint32_t tileset_get_current_animation_tileid(Tile * tile) {
+    // Get current frame from somewhere
+    // Store last tick somewhere
+    uint32_t duration = tile->animation[tile->current_animation_frame].duration;
     if (duration == 0) {
         log_error("Duration is 0");
         return 0;
     }
     int ticks = SDL_GetTicks();
     
-    if (ticks - frame->animation->last_tick > duration) {
-        // log_debug("Animating frame %d of %d", frame->animation->current_frame, frame->animation->num_frames);
-        frame->animation->current_frame = (frame->animation->current_frame + 1) % frame->animation->num_frames;
-        frame->animation->last_tick = ticks;
+    if (ticks - tile->last_tick > duration) {
+        // log_debug("Animating frame %d of %d id ", tile->current_animation_frame, tile->animation_count);
+        tile->current_animation_frame = (tile->current_animation_frame + 1) % tile->animation_count;
+        tile->last_tick = ticks;
     }
-    return frame->animation->frames[frame->animation->current_frame].tileid;
+    return tile->animation[tile->current_animation_frame].tileid;
+}
+
+Tile * tileset_get_tile_by_local_id(Tileset * tileset, int local_tile_id) {
+    for (int i = 0; i < tileset->num_tiles; i++) {
+        if (tileset->tiles[i].id == local_tile_id) {
+            return tileset->tiles + i;
+        }
+    }
+    return NULL;
+}
+
+void tileset_render_tile(App * app, Tileset * tileset, int global_tile_id, int x, int y, bool animated) {
+    uint32_t tileid = global_tile_id & TILE_ID_MASK;
+    if (tileid == 0) {
+        // Skip rendering empty tiles
+        return;
+    }
+    tileid--; // Convert to local tile id
+    Tile * tile = tileset_get_tile_by_local_id(tileset, tileid);
+    if (tile != NULL) {
+        // Check if tile is animated
+        if (tile->animation != NULL && animated) {
+            tileid = tileset_get_current_animation_tileid(tile);
+        }
+    }
+    int columns = tileset->columns;
+    int tile_x = tileid % columns;
+    int tile_y = tileid / columns;
+    SDL_Rect src;
+    SDL_Rect dest;
+    int tile_width = tileset->tile_width;
+    int tile_height = tileset->tile_height;
+    
+    int margin = tileset->margin;
+    int spacing = tileset->spacing;
+    int tile_x_px = tile_x * (tile_width + spacing) + margin;
+    int tile_y_px = tile_y * (tile_height + spacing) + margin;
+    SDL_Texture *texture = tileset->texture;
+
+    // Setup atlasimage source and destination
+    src.x = tile_x_px;
+    src.y = tile_y_px;
+    src.w = tile_width;
+    src.h = tile_height;
+    dest.x = x;
+    dest.y = y;
+    dest.w = tile_width;
+    dest.h = tile_height;
+
+    SDL_RendererFlip flip = SDL_FLIP_NONE;
+    uint32_t flags = global_tile_id & TILE_FLAG_MASK;
+    // Read flip from tile flags
+    if (flags & FLIPPED_HORIZONTALLY_FLAG) {
+        flip |= SDL_FLIP_HORIZONTAL;
+    }
+    if (flags & FLIPPED_VERTICALLY_FLAG) {
+        flip |= SDL_FLIP_VERTICAL;
+    }
+    if (flags & FLIPPED_DIAGONALLY_FLAG) {
+        flip |= SDL_FLIP_HORIZONTAL;
+        flip |= SDL_FLIP_VERTICAL;
+    }
+    // log_debug("Rendering tile %d pos src: [%d %d] dst: [%d %d] col: %d", tileid, tile_x_px, tile_y_px, x, y, columns);
+
+    SDL_RenderCopyEx(app->renderer, texture, &src, &dest, 0, NULL, flip);
 }
 
 void tileset_free(Tileset * tiles) {
-    // Free animations if they exist
-    for (int i = 0; i < tiles->tile_image.num_frames; i++) {
-        if (tiles->tile_image.frames[i].animation != NULL) {
-            for (int j = 0; j < tiles->tile_image.frames[i].animation->num_frames; j++) {
-                free(tiles->tile_image.frames[i].animation->frames);
+    // Free tileset tiles
+    for (int i = 0; i < tiles->num_tiles; i++) {
+        free(tiles->tiles[i].image);
+        free(tiles->tiles[i].type);
+        // Free properties
+        for (int j = 0; j < tiles->tiles[i].property_count; j++) {
+            free(tiles->tiles[i].properties[j].name);
+            free(tiles->tiles[i].properties[j].type);
+            free(tiles->tiles[i].properties[j].propertytype);
+            if (tiles->tiles[i].properties[j].string_value != NULL) {
+                free(tiles->tiles[i].properties[j].string_value);
             }
-            free(tiles->tile_image.frames[i].animation);
+        }
+        free(tiles->tiles[i].properties);
+        // Free animation
+        if (tiles->tiles[i].animation != NULL) {
+            free(tiles->tiles[i].animation);
         }
     }
-    free(tiles->tile_image.frames);
-    free(tiles->tile_image.texture);
-    SDL_DestroyTexture(tiles->tile_image.texture);
+    SDL_DestroyTexture(tiles->texture);
+    free(tiles->tiles);
+    free(tiles);
 }

@@ -3,18 +3,18 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "/home/erikkallen/Projects/erik/zuul/assets/map_tiles.tsj",
+    "activeFile": "/home/erikkallen/Projects/erik/zuul/assets/home.tmj",
     "expandedProjectPaths": [
         "/home/erikkallen/Projects/erik/zuul/assets"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "/home/erikkallen/Projects/erik/zuul/assets/home.tmj": {
-            "scale": 2,
+            "scale": 1,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 511.5,
-                "y": 439.25
+                "x": 680,
+                "y": 583.5
             }
         },
         "/home/erikkallen/Projects/erik/zuul/assets/map_tiles.tsj": {
@@ -57,9 +57,9 @@
     "project": "zuul.tiled-project",
     "property.type": "int",
     "recentFiles": [
-        "/home/erikkallen/Projects/erik/zuul/assets/home.tmj",
-        "/home/erikkallen/Projects/erik/zuul/assets/player_tiles.tsj",
         "/home/erikkallen/Projects/erik/zuul/assets/map_tiles.tsj",
+        "/home/erikkallen/Projects/erik/zuul/assets/player_tiles.tsj",
+        "/home/erikkallen/Projects/erik/zuul/assets/home.tmj",
         "/home/erikkallen/Projects/erik/zuul/assets/maptiles.tsj",
         "/home/erikkallen/Projects/erik/zuul/assets/tiles.tsj",
         "home.tmj"

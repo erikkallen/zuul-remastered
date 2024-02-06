@@ -27,44 +27,33 @@ typedef enum TileType
     TILE_TYPE_OBJECT
 } TileType;
 
-typedef struct AnimationFrame
-{
-    int tileid;
-    int duration;
-    struct AnimationFrame *next;
-} AnimationFrame;
-
 typedef struct Animation
 {
-    int num_frames;
-    int frame_duration;
-    int current_frame;
-    uint32_t current_delay;
+    uint32_t current_frame;
     uint32_t last_tick;
-    // int loop;
-    int ping_pong;
-    int reverse;
-    AnimationFrame *frames;
 } Animation;
 
 typedef struct Frame
 {
-    TileType type;
-    SDL_Rect frame;
-    Animation *animation;
-    struct Frame *next;
+    int duration;
+    int tileid;
 } Frame;
 
-// Forward declaration of textureimage
-typedef struct TextureImage
+typedef struct RenderFrame
+{
+    uint32_t start_tick;
+    int current_rect;
+    uint32_t rect_count;
+    SDL_Rect *rect;
+} RenderFrame;
+typedef struct AtlasImage
 {
     char filename[MAX_FILENAME_LENGTH];
-    uint32_t num_frames;
-    Frame *frames;
-    int current_frame;
+    uint32_t frame_count;
+    RenderFrame *frames;
+    
     SDL_Texture *texture;
-    struct TextureImage *next;
-} TextureImage;
+} AtlasImage;
 
 typedef struct Property
 {
@@ -84,28 +73,32 @@ typedef struct Property
 } Property;
 
 // Still deciding on how to best parse/render this
-// typedef struct Tile
-// {
-//     char *image; // Optional
+typedef struct Tile
+{
+    char *image; // Optional
 
-//     int id;
-//     int imageheight;
-//     int imagewidth;
-//     int x;
-//     int y;
-//     int width;
-//     int height;
+    int id; // Local id
+    int imageheight;
+    int imagewidth;
+    int x;
+    int y;
+    int width;
+    int height;
 
-//     double probability; // Optional
+    double probability; // Optional
 
-//     size_t animation_count;
-//     Frame *animation;
+    size_t animation_count;
+    Frame *animation;
 
-//     int terrain[4]; // Optional
+    uint32_t current_animation_frame;
+    uint32_t last_tick;
 
-//     size_t property_count;
-//     Property *properties;
-// } Tile;
+    int terrain[4]; // Optional
+    char *type;     // Optional
+
+    size_t property_count;
+    Property *properties;
+} Tile;
 
 typedef struct Tileset
 {
@@ -122,13 +115,12 @@ typedef struct Tileset
     uint32_t margin;
     uint32_t num_tiles;
 
-    // Tile *tiles;
-    TextureImage tile_image;
-    struct Tileset *next;
+    Tile *tiles;
+    SDL_Texture *texture;
 } Tileset;
 
-void tileset_load(App *app, Tileset *tileset, const char *filename);
+Tileset * tileset_load(App * app, const char * filename);
 void tileset_free(Tileset *tiles);
-uint32_t tileset_get_animation_frame_id(Frame *frame);
+void tileset_render_tile(App * app, Tileset * tileset, int global_tile_id, int x, int y, bool animated);
 
 #endif

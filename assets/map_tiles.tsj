@@ -1,11 +1,11 @@
-{ "columns":11,
+{ "columns":13,
  "image":"map_tiles.png",
  "imageheight":32,
- "imagewidth":352,
+ "imagewidth":416,
  "margin":0,
  "name":"map_tiles",
  "spacing":0,
- "tilecount":11,
+ "tilecount":13,
  "tiledversion":"1.10.2",
  "tileheight":32,
  "tiles":[
@@ -26,7 +26,6 @@
          "objectgroup":
             {
              "draworder":"index",
-             "id":2,
              "name":"",
              "objects":[
                     {
@@ -52,11 +51,11 @@
          "animation":[
                 {
                  "duration":400,
-                 "tileid":6
+                 "tileid":7
                 }, 
                 {
                  "duration":400,
-                 "tileid":7
+                 "tileid":6
                 }, 
                 {
                  "duration":400,
@@ -64,9 +63,29 @@
                 }, 
                 {
                  "duration":400,
-                 "tileid":9
+                 "tileid":6
                 }],
          "id":6
+        }, 
+        {
+         "animation":[
+                {
+                 "duration":400,
+                 "tileid":9
+                }, 
+                {
+                 "duration":400,
+                 "tileid":11
+                }, 
+                {
+                 "duration":400,
+                 "tileid":10
+                }, 
+                {
+                 "duration":400,
+                 "tileid":11
+                }],
+         "id":9
         }, 
         {
          "id":10,
