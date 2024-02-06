@@ -46,8 +46,8 @@ static void capFrameRate(long *then, float *remainder)
 }
 
 int main(int argc, char* argv[]) {
-    Tileset map_tiles = {0};
-    Tileset player_tiles = {0};
+    Tileset * map_tiles = tileset_load("../assets/map_tiles.tsj");
+    Tileset * player_tiles = tileset_load("../assets/player_tiles.tsj");
     App app = {0};
     Map map = {0};
     struct Entity player;
@@ -65,10 +65,10 @@ int main(int argc, char* argv[]) {
     // Init SDL
     init_sdl(&app);
     // Init tilesets
-    tileset_load(&app, &map_tiles, "../assets/map_tiles.tsj");
-    tileset_load(&app, &player_tiles, "../assets/player_tiles.tsj");
-    player_init(&app, &player, &player_tiles);
-    map_init(&app, &map, &map_tiles, "../assets/home.tmj");
+    
+    
+    player_init(&app, &player, player_tiles);
+    map_init(&app, &map, map_tiles, "../assets/home.tmj");
 
     then = SDL_GetTicks();
     //Camera camera = make_camera(&app, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -92,8 +92,8 @@ int main(int argc, char* argv[]) {
     SDL_DestroyRenderer(app.renderer);
     SDL_DestroyWindow(app.window);
     player_free(&player);
-    tileset_free(&player_tiles);
-    tileset_free(&map_tiles);
+    tileset_free(player_tiles);
+    tileset_free(map_tiles);
     map_free(&map);
     IMG_Quit();
     SDL_Quit();

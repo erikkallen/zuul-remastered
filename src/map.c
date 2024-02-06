@@ -134,8 +134,9 @@ int map_load(App * app, Map * map, const char *filename) {
             // bool rotated_hex120 = (global_tile_id & ROTATED_HEXAGONAL_120_FLAG);
             
             // Read flags
-            new_layer->data[tile_index].flags = global_tile_id & TILE_FLAG_MASK;
-            new_layer->data[tile_index].id = (global_tile_id & TILE_ID_MASK);
+            new_layer->data[tile_index].flags = gloab_tile_id;
+            // = global_tile_id & TILE_FLAG_MASK;
+            // new_layer->data[tile_index].id = (global_tile_id & TILE_ID_MASK);
             // log_debug("Tile id: %d flags: %x gid: %u", new_layer->data[tile_index].id, new_layer->data[tile_index].flags, global_tile_id);
             tile_index++;
         }
@@ -218,7 +219,6 @@ void map_draw_layer(App * app, Map * map, Layer * layer) {
     log_debug("Drawing layer start_col: %d end_col: %d start_row: %d end_row: %d", start_col, end_col, start_row, end_row);
     for (int i = start_col; i < end_col; i++) {
         for (int j = start_row; j < end_row; j++) {
-            SDL_Rect dest;
             uint32_t tile_index = i+(j*layer->width);
             if (tile_index > layer->width * layer->height) {
                 log_error("Tile index out of range");
@@ -229,33 +229,11 @@ void map_draw_layer(App * app, Map * map, Layer * layer) {
                 continue;
             }
             // Convert to local tile index TODO make work for multiple tilesets
-            uint32_t tile_id = layer->data[tile_index].id - 1;
+            uint32_t global_tile_id = layer->data[tile_index].id - 1;
             // log_debug("Drawing tile %d", tile_id);
-            Frame * frames = map->tileset->tile_image.frames;
-            Frame * frame = &map->tileset->tile_image.frames[tile_id];
-            SDL_Texture *texture = map->tileset->tile_image.texture;
-            SDL_Rect * src = &frame->frame;
-            if (frame->animation != NULL) {
-                src = &frames[tileset_get_animation_frame_id(frame)].frame;
-            }
-            dest.x = (i - start_col) * map->tile_width + offset_x;
-            dest.y = (j - start_row) * map->tile_height + offset_y;
-            dest.w = map->tile_width;
-            dest.h = map->tile_height;
-            SDL_RendererFlip flip = SDL_FLIP_NONE;
-            // Read flip from tile flags
-            if (layer->data[tile_index].flags & FLIPPED_HORIZONTALLY_FLAG) {
-                flip |= SDL_FLIP_HORIZONTAL;
-            }
-            if (layer->data[tile_index].flags & FLIPPED_VERTICALLY_FLAG) {
-                flip |= SDL_FLIP_VERTICAL;
-            }
-            if (layer->data[tile_index].flags & FLIPPED_DIAGONALLY_FLAG) {
-                flip |= SDL_FLIP_HORIZONTAL;
-                flip |= SDL_FLIP_VERTICAL;
-            }
-
-            SDL_RenderCopyEx(app->renderer, texture, src, &dest, 0, NULL, flip);
+            int x = (i - start_col) * map->tile_width + offset_x;
+            int y = (j - start_row) * map->tile_height + offset_y;
+            tileset_render_tile(app, global_tile_id, x, y);
         }
     }
 }

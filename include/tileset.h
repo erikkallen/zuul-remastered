@@ -49,10 +49,8 @@ typedef struct Animation
 
 typedef struct Frame
 {
-    TileType type;
-    SDL_Rect frame;
-    Animation *animation;
-    struct Frame *next;
+    int duration;
+    int tileid;
 } Frame;
 
 // Forward declaration of textureimage
@@ -84,28 +82,29 @@ typedef struct Property
 } Property;
 
 // Still deciding on how to best parse/render this
-// typedef struct Tile
-// {
-//     char *image; // Optional
+typedef struct Tile
+{
+    char *image; // Optional
 
-//     int id;
-//     int imageheight;
-//     int imagewidth;
-//     int x;
-//     int y;
-//     int width;
-//     int height;
+    int id; // Local id
+    int imageheight;
+    int imagewidth;
+    int x;
+    int y;
+    int width;
+    int height;
 
-//     double probability; // Optional
+    double probability; // Optional
 
-//     size_t animation_count;
-//     Frame *animation;
+    size_t animation_count;
+    Frame *animation;
 
-//     int terrain[4]; // Optional
+    int terrain[4]; // Optional
+    char *type;     // Optional
 
-//     size_t property_count;
-//     Property *properties;
-// } Tile;
+    size_t property_count;
+    Property *properties;
+} Tile;
 
 typedef struct Tileset
 {
@@ -122,9 +121,8 @@ typedef struct Tileset
     uint32_t margin;
     uint32_t num_tiles;
 
-    // Tile *tiles;
-    TextureImage tile_image;
-    struct Tileset *next;
+    Tile *tiles;
+    SDL_Texture *texture;
 } Tileset;
 
 void tileset_load(App *app, Tileset *tileset, const char *filename);
