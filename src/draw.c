@@ -11,16 +11,6 @@ void draw_prepare_scene(App * app, SDL_Texture * target)
 	SDL_RenderClear(app->renderer);
 }
 
-int draw_load_texture(App * app, struct TextureImage * texture, const char * filename)
-{
-	SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Loading %s", filename);
-
-	texture->texture = IMG_LoadTexture(app->renderer, filename);
-	SDL_assert(texture->texture);
-
-	return 0;
-}
-
 Camera make_camera(App *app, int width, int height) {
     Camera camera = {
         .renderer = app->renderer,

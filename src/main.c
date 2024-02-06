@@ -46,9 +46,8 @@ static void capFrameRate(long *then, float *remainder)
 }
 
 int main(int argc, char* argv[]) {
-    Tileset * map_tiles = tileset_load("../assets/map_tiles.tsj");
-    Tileset * player_tiles = tileset_load("../assets/player_tiles.tsj");
     App app = {0};
+
     Map map = {0};
     struct Entity player;
     long then;
@@ -65,7 +64,8 @@ int main(int argc, char* argv[]) {
     // Init SDL
     init_sdl(&app);
     // Init tilesets
-    
+    Tileset * map_tiles = tileset_load(&app, "../assets/map_tiles.tsj");
+    Tileset * player_tiles = tileset_load(&app, "../assets/player_tiles.tsj");
     
     player_init(&app, &player, player_tiles);
     map_init(&app, &map, map_tiles, "../assets/home.tmj");
@@ -81,8 +81,6 @@ int main(int argc, char* argv[]) {
         player_handle(&app, &map, &camera, &player);
         map_draw(&app, &map);
         player_draw(&app, &player);
-        // Debug camera position
-        //log_debug("Camera x: %f, y: %f", camera.x, camera.y);
         // Screen
         draw_prepare_scene(&app, NULL);
         draw_camera_to_screen(&app, &camera);

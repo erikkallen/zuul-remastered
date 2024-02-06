@@ -15,6 +15,7 @@ int player_init(App * app, struct Entity * player, Tileset * tileset) {
     player->width = tileset->tile_width;
     player->height = tileset->tile_height;
     player->tileset = tileset;
+    player->facing = PLAYER_FACING_RIGHT;
     return 0;
 }
 
@@ -60,8 +61,8 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
                 camera->x += player->dx;
             }
         }
-    } else if (camera->x >= (map->width * map->tile_width) - camera->width) {
-        camera->x = (map->width * map->tile_width) - camera->width;
+    } else if (camera->x >= (map->width * map->tilewidth) - camera->width) {
+        camera->x = (map->width * map->tilewidth) - camera->width;
         if (player->dx > (camera->width/2) - (player->width/2)) {
             // Move right
             player->x += player->dx;
@@ -89,8 +90,8 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
                 camera->y += player->dy;
             }
         }
-    } else if (camera->y >= (map->height * map->tile_height) - camera->height) {
-        camera->y = (map->height * map->tile_height) - camera->height;
+    } else if (camera->y >= (map->height * map->tileheight) - camera->height) {
+        camera->y = (map->height * map->tileheight) - camera->height;
         if (player->dy > (camera->height/2) - (player->height/2)) {
             // Move down
             player->y += player->dy;
@@ -106,9 +107,9 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
         camera->y += player->dy;
     }
     // Debug camera position
-    log_debug("Camera x: %f y: %f", camera->x, camera->y);
+    // log_debug("Camera x: %f y: %f", camera->x, camera->y);
     // Debug player position
-    log_debug("Player x: %d y: %d", player->x, player->y);
+    // log_debug("Player x: %d y: %d", player->x, player->y);
 
 
 
@@ -129,7 +130,7 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
     // player->x += player->dx;
     // player->y += player->dy;
     // Debug player position
-    log_debug("Player x: %d y: %d", player->x, player->y);
+    // log_debug("Player x: %d y: %d", player->x, player->y);
     // camera->x = camera->width;
 
     // Move camera if player gets close to edge but stop if camera hits map border
@@ -142,39 +143,8 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
 
 void player_draw(App * app, struct Entity *entity)
 {
-	SDL_Rect dest;
-    Frame * frame;
-	Frame *frames = entity->tileset->tile_image.frames;
-    SDL_Texture *texture = entity->tileset->tile_image.texture;
-
-    switch (entity->facing) {
-        case PLAYER_FACING_UP:
-            frame = &frames[4];
-            break;
-        case PLAYER_FACING_DOWN:
-            frame = &frames[6];
-            break;
-        case PLAYER_FACING_LEFT:
-            frame = &frames[0];
-            break;
-        case PLAYER_FACING_RIGHT:
-            frame = &frames[2];
-            break;
-    }
-
-    SDL_Rect * src = &frame->frame;
-    if (frame->animation != NULL && entity->move_speed > 0) {
-        src = &frames[tileset_get_animation_frame_id(frame)].frame;
-    }
-    
-    // Get texture from tileset
-
-	dest.x = entity->x;
-	dest.y = entity->y;
-	dest.w = src->w;
-	dest.h = src->h;
-
-	SDL_RenderCopy(app->renderer, texture, src, &dest);
+	// Draw player
+    tileset_render_tile(app, entity->tileset, entity->facing, entity->x, entity->y, entity->move_speed > 0 ? 1 : 0);
 }
 
 void player_free(struct Entity * player) {
