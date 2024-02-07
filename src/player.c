@@ -46,72 +46,61 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
         player->move_speed = 0;
     }
     // Keep player in the center of the camera until the camera hits the edge of the map
-    // camera->x += player->dx;
-    // camera->y += player->dy;
-    if (camera->x <= 0) {
-        camera->x = 0;
-        if (player->dx < 0) {
-            // Move left
+    // X Axis movement
+    if (player->dx < 0) {
+        // Move left
+        // Check if camera should move or player based on player position
+        if (player->x > (camera->width/2) - (player->width/2) || camera->x == 0) {
             player->x += player->dx;
         } else {
-            // Move right
-            if (player->x <= (camera->width/2) - (player->width/2)) {
-                player->x += player->dx;
-            } else {
-                camera->x += player->dx;
-            }
+            camera->x += player->dx;
         }
-    } else if (camera->x >= (map->width * map->tilewidth) - camera->width) {
-        camera->x = (map->width * map->tilewidth) - camera->width;
-        if (player->dx > (camera->width/2) - (player->width/2)) {
-            // Move right
+    } else {
+        // Move right
+        if (player->x < (camera->width/2) - (player->width/2) || camera->x == (map->width * map->tilewidth) - camera->width) {
             player->x += player->dx;
         } else {
-            // Move left
-            if (player->x >= (camera->width/2) - (player->width/2)) {
-                player->x += player->dx;
-            } else {
-                camera->x += player->dx;
-            }
+            camera->x += player->dx;
         }
-    } else {
-        camera->x += player->dx;
     }
-    if (camera->y <= 0) {
-        camera->y = 0;
-        if (player->dy < 0) {
-            // Move up
+
+    // Y Axis movement
+    if (player->dy < 0) {
+        // Move up
+        // Check if camera should move or player based on player position
+        if (player->y > (camera->height/2) - (player->height/2) || camera->y == 0) {
             player->y += player->dy;
         } else {
-            // Move down
-            if (player->y <= (camera->height/2) - (player->height/2)) {
-                player->y += player->dy;
-            } else {
-                camera->y += player->dy;
-            }
-        }
-    } else if (camera->y >= (map->height * map->tileheight) - camera->height) {
-        camera->y = (map->height * map->tileheight) - camera->height;
-        if (player->dy > (camera->height/2) - (player->height/2)) {
-            // Move down
-            player->y += player->dy;
-        } else {
-            // Move up
-            if (player->y >= (camera->height/2) - (player->height/2)) {
-                player->y += player->dy;
-            } else {
-                camera->y += player->dy;
-            }
+            camera->y += player->dy;
         }
     } else {
-        camera->y += player->dy;
+        // Move down
+        if (player->y < (camera->height/2) - (player->height/2) || camera->y == (map->height * map->tileheight) - camera->height) {
+            player->y += player->dy;
+        } else {
+            camera->y += player->dy;
+        }
     }
+
     // Debug camera position
     // log_debug("Camera x: %f y: %f", camera->x, camera->y);
     // Debug player position
     // log_debug("Player x: %d y: %d", player->x, player->y);
 
 
+    // Prevent camera from moving outside of map
+    if (camera->x < 0) {
+        camera->x = 0;
+    }
+    if (camera->y < 0) {
+        camera->y = 0;
+    }
+    if (camera->x > (map->width * map->tilewidth) - camera->width) {
+        camera->x = (map->width * map->tilewidth) - camera->width;
+    }
+    if (camera->y > (map->height * map->tileheight) - camera->height) {
+        camera->y = (map->height * map->tileheight) - camera->height;
+    }
 
     // Prevent player from moving outside of map
     if (player->x < 0) {
@@ -126,15 +115,6 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
     if (player->y > camera->height - player->height) {
         player->y = camera->height - player->height;
     }
-
-    // player->x += player->dx;
-    // player->y += player->dy;
-    // Debug player position
-    // log_debug("Player x: %d y: %d", player->x, player->y);
-    // camera->x = camera->width;
-
-    // Move camera if player gets close to edge but stop if camera hits map border
-
 
     // Reset player dx and dy
     player->dx = 0;
