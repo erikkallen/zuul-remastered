@@ -42,7 +42,7 @@
             }
         }
     },
-    "frame.defaultDuration": 400,
+    "frame.defaultDuration": 750,
     "last.imagePath": "/home/erikkallen/Projects/erik/zuul/assets",
     "map.height": 32,
     "map.lastUsedFormat": "json",
