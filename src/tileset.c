@@ -154,12 +154,10 @@ Tileset * tileset_load(App * app, const char * filename) {
                 strcpy(property->name, j_name->valuestring);
 
                 const cJSON * j_type = cJSON_GetObjectItemCaseSensitive(j_property, "type");
-                if (!cJSON_IsString(j_type)) {
-                    log_error("Failed to parse tile property type");
-                    exit(1);
+                if (cJSON_IsString(j_type)) {
+                    property->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
+                    strcpy(property->type, j_type->valuestring);
                 }
-                property->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
-                strcpy(property->type, j_type->valuestring);
 
                 const cJSON * j_propertytype = cJSON_GetObjectItemCaseSensitive(j_property, "propertytype");
                 if (cJSON_IsString(j_propertytype)) {
@@ -250,7 +248,11 @@ static uint32_t tileset_get_current_animation_tileid(Tile * tile) {
     return tile->animation[tile->current_animation_frame].tileid;
 }
 
-Tile * tileset_get_tile_by_local_id(Tileset * tileset, int local_tile_id) {
+Tile * tileset_get_tile_by_id(Tileset * tileset, int tile_id, bool local) {
+    uint32_t local_tile_id = tile_id;
+    if (!local) {
+        local_tile_id = (tile_id & TILE_ID_MASK) - 1;
+    }
     for (int i = 0; i < tileset->num_tiles; i++) {
         if (tileset->tiles[i].id == local_tile_id) {
             return tileset->tiles + i;
@@ -266,7 +268,7 @@ void tileset_render_tile(App * app, Tileset * tileset, int global_tile_id, int x
         return;
     }
     tileid--; // Convert to local tile id
-    Tile * tile = tileset_get_tile_by_local_id(tileset, tileid);
+    Tile * tile = tileset_get_tile_by_id(tileset, tileid, true);
     if (tile != NULL) {
         // Check if tile is animated
         if (tile->animation != NULL && animated) {

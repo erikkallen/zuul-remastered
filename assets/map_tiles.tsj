@@ -26,11 +26,12 @@
          "objectgroup":
             {
              "draworder":"index",
+             "id":2,
              "name":"",
              "objects":[
                     {
                      "height":32,
-                     "id":9,
+                     "id":10,
                      "name":"",
                      "rotation":0,
                      "type":"",
@@ -45,7 +46,13 @@
              "x":0,
              "y":0
             },
-         "type":"building"
+         "properties":[
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":true
+                }],
+         "type":"solid"
         }, 
         {
          "animation":[

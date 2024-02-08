@@ -215,3 +215,71 @@ void map_free(Map * map) {
     }
     free(map->layers);
 }
+
+uint32_t map_get_tile_id_at_x_y(Map * map, int layer_index, int x, int y) {
+    log_debug("Getting tile at %d %d", x, y);
+    if (layer_index > map->layer_count) {
+        log_error("Layer index out of range");
+        return 0;
+    }
+    Layer * layer = &map->layers[layer_index];
+    if (x < 0 || y < 0 || x > layer->width || y > layer->height) {
+        log_error("Tile index out of range");
+        return 0;
+    }
+    uint32_t tile_col = x / map->tilewidth;
+    uint32_t tile_row = y / map->tileheight;
+    uint32_t tile_index = tile_col + (tile_row * (layer->width / map->tilewidth));
+    log_debug("Tile index %d", tile_index);
+    return layer->data[tile_index];
+}
+
+uint32_t map_get_tile_id_at_row_col(Map * map, int layer_index, int col, int row) {
+    // log_debug("Getting tile at %d %d", row, col);
+    if (layer_index > map->layer_count) {
+        log_error("Layer index out of range");
+        return 0;
+    }
+    Layer * layer = &map->layers[layer_index];
+    if (row < 0 || col < 0 || row > (layer->width) || row > (layer->height)) {
+        log_error("Tile index out of range");
+        return 0;
+    }
+
+    uint32_t tile_index = col + (row * (layer->width));
+    //log_debug("Tile index %d layer", tile_index);
+    return layer->data[tile_index];
+}
+
+Tile * map_get_tile_at(Map * map, int col, int row) {
+    for (int i=map->layer_count-1;i>=0;i--) {
+        uint32_t global_tile_id = map_get_tile_id_at_row_col(map, i, col, row);
+        //log_debug("Global tile id: %d layer: %d", global_tile_id, i);
+        if (global_tile_id != 0) {
+            // Get tileset
+            Tileset * tileset = map->tileset;
+            // Get tileset tile
+            Tile * tile = tileset_get_tile_by_id(tileset, global_tile_id, false);
+            if (tile == NULL) {
+                // log_error("Tile not found");
+                continue;
+            } else {
+                return tile;
+            }
+        }
+    }
+    return NULL;
+}
+
+bool map_check_collision(Map * map, int col, int row) {
+    Tile * tile = map_get_tile_at(map, col, row);
+    if (tile == NULL) {
+        return false;
+    }
+    for (int i=0;i<tile->property_count;i++) {
+        if (strcmp(tile->properties[i].name, "solid") == 0) {
+            return tile->properties[i].bool_value;
+        }
+    }
+    return false;
+}

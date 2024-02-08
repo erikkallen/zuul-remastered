@@ -10,8 +10,8 @@
 
 #define PLAYER_BORDER_DISTANCE 10
 int player_init(App * app, struct Entity * player, Tileset * tileset) {
-    player->x = 100;
-    player->y = 100;
+    player->x = 101;
+    player->y = 101;
     player->width = tileset->tile_width;
     player->height = tileset->tile_height;
     player->tileset = tileset;
@@ -45,6 +45,29 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
     } else{
         player->move_speed = 0;
     }
+    
+    int player_x = player->x + camera->x + player->dx;
+    int player_y = player->y + camera->y + player->dy;
+
+    // Get player tile position
+    int player_tile_x = player_x / map->tilewidth;
+    int player_tile_y = player_y / map->tileheight;
+    // Get player tile intersection for all 4 points of the player bounding box
+    
+    // Check for collision for each_tile under the player
+    for (int i=player_tile_x;i <= player_tile_x+(player->width/map->tilewidth); i++) {
+        for (int j=player_tile_y;j <= player_tile_y+(player->height/map->tileheight); j++) {
+            if (map_check_collision(map, i, j)) {
+                log_debug("Collision detected at x: %d y: %d", i, j);
+                // Prevent player from moving
+                player->dx = 0;
+                player->dy = 0;
+                break;
+            }
+        }
+    }
+
+
     // Keep player in the center of the camera until the camera hits the edge of the map
     // X Axis movement
     if (player->dx < 0) {
@@ -124,6 +147,16 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
 void player_draw(App * app, struct Entity *entity)
 {
 	// Draw player
+    int player_x = entity->x + app->camera->x + entity->dx;
+    int player_y = entity->y + app->camera->y + entity->dy;
+
+    SDL_Rect player_rect = {player_x, player_y, entity->width, entity->height};
+    SDL_SetRenderDrawColor(app->renderer,0,0,255,255);
+    SDL_RenderFillRect(app->renderer,
+                       &player_rect);
+    SDL_SetRenderDrawColor(app->renderer,255,0,0,255);
+    SDL_RenderDrawPoint(app->renderer,player_x,player_y);
+    // Get player bounding box as SDL_Rect
     tileset_render_tile(app, entity->tileset, entity->facing, entity->x, entity->y, entity->move_speed > 0 ? 1 : 0);
 }
 

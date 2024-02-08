@@ -130,5 +130,9 @@ typedef struct Map
 void map_init(App *app, Map *map, Tileset *tileset, const char *filename);
 void map_draw(App *app, Map *map);
 void map_free(Map *map);
+uint32_t map_get_tile_id_at_x_y(Map * map, int layer_index, int x, int y);
+uint32_t map_get_tile_id_at_row_col(Map * map, int layer_index, int row, int col) ;
+Tile * map_get_tile_at(Map * map, int x, int y);
+bool map_check_collision(Map * map, int col, int row);
 
 #endif
