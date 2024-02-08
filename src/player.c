@@ -150,12 +150,12 @@ void player_draw(App * app, struct Entity *entity)
     int player_x = entity->x + app->camera->x + entity->dx;
     int player_y = entity->y + app->camera->y + entity->dy;
 
-    SDL_Rect player_rect = {player_x, player_y, entity->width, entity->height};
-    SDL_SetRenderDrawColor(app->renderer,0,0,255,255);
-    SDL_RenderFillRect(app->renderer,
-                       &player_rect);
-    SDL_SetRenderDrawColor(app->renderer,255,0,0,255);
-    SDL_RenderDrawPoint(app->renderer,player_x,player_y);
+    // SDL_Rect player_rect = {player_x, player_y, entity->width, entity->height};
+    // SDL_SetRenderDrawColor(app->renderer,0,0,255,255);
+    // SDL_RenderFillRect(app->renderer,
+    //                    &player_rect);
+    // SDL_SetRenderDrawColor(app->renderer,255,0,0,255);
+    // SDL_RenderDrawPoint(app->renderer,player_x,player_y);
     // Get player bounding box as SDL_Rect
     tileset_render_tile(app, entity->tileset, entity->facing, entity->x, entity->y, entity->move_speed > 0 ? 1 : 0);
 }

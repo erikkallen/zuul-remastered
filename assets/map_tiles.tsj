@@ -97,6 +97,15 @@
         {
          "id":10,
          "type":"water"
+        }, 
+        {
+         "id":12,
+         "properties":[
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":true
+                }]
         }],
  "tilewidth":32,
  "type":"tileset",
