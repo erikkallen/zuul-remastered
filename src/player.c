@@ -52,7 +52,7 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
     // Get player tile position
     int player_tile_x = player_x / map->tilewidth;
     int player_tile_y = player_y / map->tileheight;
-    // Get player tile intersection for all 4 points of the player bounding box
+    // Get player object from filemap and find bounding box
     
     // Check for collision for each_tile under the player
     for (int i=player_tile_x;i <= player_tile_x+(player->width/map->tilewidth); i++) {

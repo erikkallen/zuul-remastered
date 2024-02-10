@@ -181,7 +181,60 @@ Tileset * tileset_load(App * app, const char * filename) {
                 property_index++;
             }
         }
-
+        // Handle Objects
+        const cJSON * j_objectgroup = cJSON_GetObjectItemCaseSensitive(j_tile, "objectgroup");
+        if (cJSON_IsObject(j_objectgroup)) {
+            const cJSON * j_objects = cJSON_GetObjectItemCaseSensitive(j_objectgroup, "objects");
+            if (cJSON_IsArray(j_objects)) {
+                const cJSON * j_object = NULL;
+                tile->objectgroup_count = cJSON_GetArraySize(j_objects);
+                tile->objectgroup = calloc(tile->objectgroup_count, sizeof(Layer));
+                int object_index = 0;
+                cJSON_ArrayForEach(j_object, j_objects) {
+                    Layer * object = &tile->objectgroup[object_index];
+                    const cJSON * j_x = cJSON_GetObjectItemCaseSensitive(j_object, "x");
+                    if (!cJSON_IsNumber(j_x)) {
+                        log_error("Failed to parse object x");
+                        exit(1);
+                    }
+                    object->x = j_x->valueint;
+                    const cJSON * j_y = cJSON_GetObjectItemCaseSensitive(j_object, "y");
+                    if (!cJSON_IsNumber(j_y)) {
+                        log_error("Failed to parse object y");
+                        exit(1);
+                    }
+                    object->y = j_y->valueint;
+                    const cJSON * j_width = cJSON_GetObjectItemCaseSensitive(j_object, "width");
+                    if (!cJSON_IsNumber(j_width)) {
+                        log_error("Failed to parse object width");
+                        exit(1);
+                    }
+                    object->width = j_width->valueint;
+                    const cJSON * j_height = cJSON_GetObjectItemCaseSensitive(j_object, "height");
+                    if (!cJSON_IsNumber(j_height)) {
+                        log_error("Failed to parse object height");
+                        exit(1);
+                    }
+                    object->height = j_height->valueint;
+                    const cJSON * j_type = cJSON_GetObjectItemCaseSensitive(j_object, "type");
+                    if (cJSON_IsString(j_type)) {
+                        object->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
+                        strcpy(object->type, j_type->valuestring);
+                    }
+                    const cJSON * j_name = cJSON_GetObjectItemCaseSensitive(j_object, "name");
+                    if (cJSON_IsString(j_name)) {
+                        object->name = calloc(strlen(j_name->valuestring) + 1, sizeof(char));
+                        strcpy(object->name, j_name->valuestring);
+                    }
+                    const cJSON * j_visible = cJSON_GetObjectItemCaseSensitive(j_object, "visible");
+                    if (!cJSON_IsBool(j_visible)) {
+                        object->visible = j_visible->valueint;
+                    }
+                }
+                object_index++;
+            }
+        }
+    
         const cJSON * j_animation = cJSON_GetObjectItemCaseSensitive(j_tile, "animation");
         // Handle animation
         if (cJSON_IsArray(j_animation)) {
@@ -324,17 +377,37 @@ void tileset_free(Tileset * tiles) {
         free(tiles->tiles[i].type);
         // Free properties
         for (int j = 0; j < tiles->tiles[i].property_count; j++) {
-            free(tiles->tiles[i].properties[j].name);
-            free(tiles->tiles[i].properties[j].type);
-            free(tiles->tiles[i].properties[j].propertytype);
+            if (tiles->tiles[i].properties[j].name != NULL) {
+                free(tiles->tiles[i].properties[j].name);
+            }
+            if (tiles->tiles[i].properties[j].type != NULL) {
+                free(tiles->tiles[i].properties[j].type);
+            }
+            if (tiles->tiles[i].properties[j].propertytype != NULL) {
+                free(tiles->tiles[i].properties[j].propertytype);
+            }
             if (tiles->tiles[i].properties[j].string_value != NULL) {
                 free(tiles->tiles[i].properties[j].string_value);
             }
         }
-        free(tiles->tiles[i].properties);
+        if (tiles->tiles[i].properties != NULL) {
+            free(tiles->tiles[i].properties);
+        }
         // Free animation
         if (tiles->tiles[i].animation != NULL) {
             free(tiles->tiles[i].animation);
+        }
+        // Free objectgroup
+        if (tiles->tiles[i].objectgroup != NULL) {
+            for (int j = 0; j < tiles->tiles[i].objectgroup_count; j++) {
+                if (tiles->tiles[i].objectgroup[j].name != NULL) {
+                    free(tiles->tiles[i].objectgroup[j].name);
+                }
+                if (tiles->tiles[i].objectgroup[j].type != NULL) {
+                    free(tiles->tiles[i].objectgroup[j].type);
+                }
+            }
+            free(tiles->tiles[i].objectgroup);
         }
     }
     SDL_DestroyTexture(tiles->texture);
