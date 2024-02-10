@@ -52,7 +52,36 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
     // Get player tile position
     int player_tile_x = player_x / map->tilewidth;
     int player_tile_y = player_y / map->tileheight;
-    // Get player object from filemap and find bounding box
+
+    int bounding_box_x = player_tile_x;
+    int bounding_box_y = player_tile_y;
+    int bounding_box_width = player->width;
+    int bounding_box_height = player->height;
+    // Get player tile_id from tilemap and find bounding box
+    Tile * player_tile = tileset_get_tile_by_id(player->tileset, player->facing, true);
+    if (player_tile == NULL) {
+        log_error("Player tile not found");
+        return;
+    }
+    // Get bouding box object from player tile
+    Layer * objectgroup = player_tile->objectgroup;
+    if (objectgroup == NULL) {
+        log_error("Player objectgroup not found");
+        return;
+    }
+    // Get bounding box position
+    for (int i=0;i<player_tile->objectgroup_count;i++) {
+        log_debug("Object x: %d y: %d width: %d height: %d", objectgroup[i].x, objectgroup[i].y, objectgroup[i].width, objectgroup[i].height);
+        if (strcmp(objectgroup->objects[i].type, "collision_box" == 0)) {
+            bounding_box_x = player_tile_x + objectgroup[i].x;
+            bounding_box_y = player_tile_y + objectgroup[i].y;
+            bounding_box_width = objectgroup[i].width;
+            bounding_box_height = objectgroup[i].height;
+            break;
+        }
+    }
+    
+
     
     // Check for collision for each_tile under the player
     for (int i=player_tile_x;i <= player_tile_x+(player->width/map->tilewidth); i++) {
