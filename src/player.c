@@ -50,8 +50,8 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
     int player_y = player->y + camera->y + player->dy;
 
     // Get player tile position
-    int player_tile_x = player_x / map->tilewidth;
-    int player_tile_y = player_y / map->tileheight;
+    int player_tile_x = player_x;
+    int player_tile_y = player_y;
 
     int bounding_box_x = player_tile_x;
     int bounding_box_y = player_tile_y;
@@ -63,18 +63,14 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
         log_error("Player tile not found");
         return;
     }
-    // Get bouding box object from player tile
-    Layer * objectgroup = player_tile->objectgroup;
-    if (objectgroup == NULL) {
-        log_error("Player objectgroup not found");
-        return;
-    }
+
     // Get bounding box position
     for (int i=0;i<player_tile->objectgroup_count;i++) {
-        log_debug("Object x: %d y: %d width: %d height: %d", objectgroup[i].x, objectgroup[i].y, objectgroup[i].width, objectgroup[i].height);
-        if (strcmp(objectgroup->objects[i].type, "collision_box" == 0)) {
-            bounding_box_x = player_tile_x + objectgroup[i].x;
-            bounding_box_y = player_tile_y + objectgroup[i].y;
+        Layer * objectgroup = player_tile->objectgroup;
+        log_debug("Object x: %d y: %d width: %d height: %d type: %s", objectgroup[i].x, objectgroup[i].y, objectgroup[i].width, objectgroup[i].height, objectgroup[i].type);
+        if (strcmp(objectgroup[i].type, "collision_box") == 0) {
+            bounding_box_x = (player_x + objectgroup[i].x);
+            bounding_box_y = (player_y + objectgroup[i].y);
             bounding_box_width = objectgroup[i].width;
             bounding_box_height = objectgroup[i].height;
             break;
@@ -82,11 +78,16 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
     }
     
 
-    
+    SDL_Rect player_rect = {bounding_box_x, bounding_box_y, bounding_box_width, bounding_box_height};
     // Check for collision for each_tile under the player
-    for (int i=player_tile_x;i <= player_tile_x+(player->width/map->tilewidth); i++) {
-        for (int j=player_tile_y;j <= player_tile_y+(player->height/map->tileheight); j++) {
-            if (map_check_collision(map, i, j)) {
+    int player_tile_col = bounding_box_x / map->tilewidth;
+    int player_tile_row = bounding_box_y / map->tileheight;
+    int player_tile_col_end = (bounding_box_x + bounding_box_width) / map->tilewidth;
+    int player_tile_row_end = (bounding_box_y + bounding_box_height) / map->tileheight;
+    for (int i=player_tile_col;i <= player_tile_col+(bounding_box_width/map->tilewidth) + 1; i++) {
+        for (int j=player_tile_row;j <= player_tile_row+(bounding_box_height/map->tileheight) + 1; j++) {
+            //log_debug("Checking collision at x: %d y: %d", i, j);
+            if (map_check_collision(map, i, j, &player_rect)) {
                 log_debug("Collision detected at x: %d y: %d", i, j);
                 // Prevent player from moving
                 player->dx = 0;

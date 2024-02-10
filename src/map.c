@@ -271,14 +271,17 @@ Tile * map_get_tile_at(Map * map, int col, int row) {
     return NULL;
 }
 
-bool map_check_collision(Map * map, int col, int row) {
+bool map_check_collision(Map * map, int col, int row, SDL_Rect * bb_rect) {
     Tile * tile = map_get_tile_at(map, col, row);
-    if (tile == NULL) {
+    if (tile == NULL || bb_rect == NULL) {
         return false;
     }
+    SDL_Rect rect = {col * map->tilewidth, row * map->tileheight, map->tilewidth, map->tileheight};
     for (int i=0;i<tile->property_count;i++) {
-        if (strcmp(tile->properties[i].name, "solid") == 0) {
-            return tile->properties[i].bool_value;
+        if (strcmp(tile->properties[i].name, "solid") == 0 && tile->properties[i].bool_value == true) {
+            if (SDL_HasIntersection(&rect, bb_rect)) {
+                return true;
+            }
         }
     }
     return false;
