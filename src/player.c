@@ -84,14 +84,20 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
     int player_tile_row = bounding_box_y / map->tileheight;
     int player_tile_col_end = (bounding_box_x + bounding_box_width) / map->tilewidth;
     int player_tile_row_end = (bounding_box_y + bounding_box_height) / map->tileheight;
-    for (int i=player_tile_col;i <= player_tile_col+(bounding_box_width/map->tilewidth) + 1; i++) {
-        for (int j=player_tile_row;j <= player_tile_row+(bounding_box_height/map->tileheight) + 1; j++) {
+    for (int i=player_tile_col;i <= player_tile_col_end + 1; i++) {
+        for (int j=player_tile_row;j <= player_tile_row_end + 1; j++) {
             //log_debug("Checking collision at x: %d y: %d", i, j);
             if (map_check_collision(map, i, j, &player_rect)) {
-                log_debug("Collision detected at x: %d y: %d", i, j);
+                log_debug("Collision detected at x: %d [%d %d] y: %d [%d %d]", i,player_tile_col, player_tile_col_end, j, player_tile_row, player_tile_row_end);
                 // Prevent player from moving
-                player->dx = 0;
-                player->dy = 0;
+                //if (i == player_tile_col || i == (player_tile_col_end + 1)) {
+                    player->dx = 0;
+                //}
+                //if (j == player_tile_row || j == (player_tile_row_end + 1)) {
+                    player->dy = 0;
+                //}
+                // player->dx = 0;
+                // player->dy = 0;
                 break;
             }
         }
