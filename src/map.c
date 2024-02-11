@@ -195,7 +195,7 @@ void map_draw_layer(App * app, Map * map, Layer * layer) {
             // log_debug("Drawing tile %d", tile_id);
             int x = (i - start_col) * map->tilewidth + offset_x;
             int y = (j - start_row) * map->tileheight + offset_y;
-            tileset_render_tile(app, map->tileset, global_tile_id, x, y, true);
+            tileset_render_tile(app, map->tileset, global_tile_id, false, x, y, true);
         }
     }
 }

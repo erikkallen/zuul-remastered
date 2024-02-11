@@ -7,6 +7,142 @@
 
 // Logging
 #include <log.h>
+
+
+static void tileset_parse_properties(const cJSON *j_tile, Tile * tile) {
+    const cJSON * j_properties = cJSON_GetObjectItemCaseSensitive(j_tile, "properties");
+    if (cJSON_IsArray(j_properties)) {
+        tile->property_count = cJSON_GetArraySize(j_properties);
+        tile->properties = calloc(tile->property_count, sizeof(Property));
+        const cJSON * j_property = NULL;
+        int property_index = 0;
+        cJSON_ArrayForEach(j_property, j_properties) {
+            Property * property = &tile->properties[property_index];
+            const cJSON * j_name = cJSON_GetObjectItemCaseSensitive(j_property, "name");
+            if (!cJSON_IsString(j_name)) {
+                log_error("Failed to parse tile property name");
+                exit(1);
+            }
+            property->name = calloc(strlen(j_name->valuestring) + 1, sizeof(char));
+            strcpy(property->name, j_name->valuestring);
+
+            const cJSON * j_type = cJSON_GetObjectItemCaseSensitive(j_property, "type");
+            if (cJSON_IsString(j_type)) {
+                property->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
+                strcpy(property->type, j_type->valuestring);
+            }
+
+            const cJSON * j_propertytype = cJSON_GetObjectItemCaseSensitive(j_property, "propertytype");
+            if (cJSON_IsString(j_propertytype)) {
+                property->propertytype = calloc(strlen(j_propertytype->valuestring) + 1, sizeof(char));
+                strcpy(property->propertytype, j_propertytype->valuestring);
+            }
+            
+
+            const cJSON * j_value = cJSON_GetObjectItemCaseSensitive(j_property, "value");
+            if (cJSON_IsString(j_value)) {
+                property->string_value = calloc(strlen(j_value->valuestring) + 1, sizeof(char));
+                strcpy(property->string_value, j_value->valuestring);
+            } else if (cJSON_IsNumber(j_value)) {
+                property->int_value = j_value->valueint;
+                property->float_value = j_value->valuedouble;
+            } else if (cJSON_IsBool(j_value)) {
+                property->bool_value = j_value->valueint;
+            } else {
+                log_warn("Property type not supported");
+            } 
+            property_index++;
+        }
+    }
+}
+
+static void tileset_parse_objectgroup(const cJSON *j_tile, Tile * tile) {
+    const cJSON * j_objectgroup = cJSON_GetObjectItemCaseSensitive(j_tile, "objectgroup");
+    if (cJSON_IsObject(j_objectgroup)) {
+        const cJSON * j_objects = cJSON_GetObjectItemCaseSensitive(j_objectgroup, "objects");
+        if (cJSON_IsArray(j_objects)) {
+            const cJSON * j_object = NULL;
+            tile->objectgroup_count = cJSON_GetArraySize(j_objects);
+            tile->objectgroup = calloc(tile->objectgroup_count, sizeof(Layer));
+            int object_index = 0;
+            cJSON_ArrayForEach(j_object, j_objects) {
+                Layer * object = &tile->objectgroup[object_index];
+                const cJSON * j_x = cJSON_GetObjectItemCaseSensitive(j_object, "x");
+                if (!cJSON_IsNumber(j_x)) {
+                    log_error("Failed to parse object x");
+                    exit(1);
+                }
+                object->x = j_x->valueint;
+                const cJSON * j_y = cJSON_GetObjectItemCaseSensitive(j_object, "y");
+                if (!cJSON_IsNumber(j_y)) {
+                    log_error("Failed to parse object y");
+                    exit(1);
+                }
+                object->y = j_y->valueint;
+                const cJSON * j_width = cJSON_GetObjectItemCaseSensitive(j_object, "width");
+                if (!cJSON_IsNumber(j_width)) {
+                    log_error("Failed to parse object width");
+                    exit(1);
+                }
+                object->width = j_width->valueint;
+                const cJSON * j_height = cJSON_GetObjectItemCaseSensitive(j_object, "height");
+                if (!cJSON_IsNumber(j_height)) {
+                    log_error("Failed to parse object height");
+                    exit(1);
+                }
+                object->height = j_height->valueint;
+                const cJSON * j_type = cJSON_GetObjectItemCaseSensitive(j_object, "type");
+                if (cJSON_IsString(j_type)) {
+                    object->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
+                    strcpy(object->type, j_type->valuestring);
+                }
+                const cJSON * j_name = cJSON_GetObjectItemCaseSensitive(j_object, "name");
+                if (cJSON_IsString(j_name)) {
+                    object->name = calloc(strlen(j_name->valuestring) + 1, sizeof(char));
+                    strcpy(object->name, j_name->valuestring);
+                }
+                const cJSON * j_visible = cJSON_GetObjectItemCaseSensitive(j_object, "visible");
+                if (!cJSON_IsBool(j_visible)) {
+                    object->visible = j_visible->valueint;
+                }
+            }
+            object_index++;
+        }
+    }
+}
+
+static void tileset_parse_animation(const cJSON *j_tile, Tile * tile) {
+    const cJSON * j_animation = cJSON_GetObjectItemCaseSensitive(j_tile, "animation");
+    // Handle animation
+    if (cJSON_IsArray(j_animation)) {
+        // Allocate animation memory
+        tile->animation_count = cJSON_GetArraySize(j_animation);
+        tile->animation = calloc(tile->animation_count, sizeof(Frame));
+        if (tile->animation == NULL) {
+            log_error("Failed to allocate animation memory");
+            exit(1);
+        }
+
+        const cJSON *j_frame = NULL;
+        size_t animation_index = 0;
+        cJSON_ArrayForEach(j_frame, j_animation) {
+            Frame * frame = &tile->animation[animation_index];
+            const cJSON *j_duration = cJSON_GetObjectItemCaseSensitive(j_frame, "duration");
+            if (!cJSON_IsNumber(j_duration)) {
+                log_error("Failed to parse tile duration");
+                exit(1);
+            }
+            const cJSON *j_tileid = cJSON_GetObjectItemCaseSensitive(j_frame, "tileid");
+            if (!cJSON_IsNumber(j_tileid)) {
+                log_error("Failed to parse tile tileid");
+                exit(1);
+            }
+            frame->duration = j_duration->valueint;
+            frame->tileid = j_tileid->valueint;
+            animation_index++;
+        }
+    }
+}
 /*
 * Load a tileset from a json file and return a pointer to the loaded tileset
 * 
@@ -85,11 +221,6 @@ Tileset * tileset_load(App * app, const char * filename) {
         log_error("Failed to parse name");
         exit(1);
     }
-    const cJSON *j_tiles = cJSON_GetObjectItemCaseSensitive(tile_json, "tiles");
-    if (!cJSON_IsArray(j_tiles)) {
-        log_error("Failed to parse tiles");
-        exit(1);
-    }
 
     tileset->tile_width = j_tile_width->valueint;
     tileset->tile_height = j_tile_height->valueint;
@@ -102,170 +233,53 @@ Tileset * tileset_load(App * app, const char * filename) {
     strcpy(tileset->name, j_name->valuestring);
     log_debug("Tileset columns: %d", tileset->columns);
     // Allocate tile memory
-    tileset->tiles = calloc(tileset->num_tiles, sizeof(Tile));
-    if (tileset->tiles == NULL) {
-        log_error("Failed to allocate tile memory");
-        exit(1);
-    }
-    const cJSON *j_tile = NULL;
-    int tile_index = 0;
-    cJSON_ArrayForEach(j_tile, j_tiles) {
-        Tile * tile = &tileset->tiles[tile_index];
-        const cJSON * j_id = cJSON_GetObjectItemCaseSensitive(j_tile, "id");
-        if (!cJSON_IsNumber(j_id)) {
-            log_error("Failed to parse tile id");
+    const cJSON *j_tiles = cJSON_GetObjectItemCaseSensitive(tile_json, "tiles");
+    if (cJSON_IsArray(j_tiles)) {
+        tileset->tile_count = cJSON_GetArraySize(j_tiles);
+        tileset->tiles = calloc(tileset->tile_count, sizeof(Tile));
+        if (tileset->tiles == NULL) {
+            log_error("Failed to allocate tile memory");
             exit(1);
         }
-        log_debug("Loading tile id: %d", j_id->valueint);
-        tile->id = j_id->valueint;
-        const cJSON * j_image = cJSON_GetObjectItemCaseSensitive(j_tile, "image");
-        if (cJSON_IsString(j_image)) {
-            tile->image = calloc(strlen(j_image->valuestring) + 1, sizeof(char));
-            strcpy(tile->image, j_image->valuestring);
-        }
-
-        const cJSON * j_imageheight = cJSON_GetObjectItemCaseSensitive(j_tile, "imageheight");
-        if (cJSON_IsNumber(j_imageheight)) {
-            tile->imageheight = j_imageheight->valueint;
-        }
-        const cJSON * j_imagewidth = cJSON_GetObjectItemCaseSensitive(j_tile, "imagewidth");
-        if (cJSON_IsNumber(j_imagewidth)) {
-            tile->imagewidth = j_imagewidth->valueint;
-        }
-        const cJSON * j_type = cJSON_GetObjectItemCaseSensitive(j_tile, "type");
-        if (cJSON_IsString(j_type)) {
-            tile->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
-            strcpy(tile->type, j_type->valuestring);
-        }
-        const cJSON * j_properties = cJSON_GetObjectItemCaseSensitive(j_tile, "properties");
-        if (cJSON_IsArray(j_properties)) {
-            tile->property_count = cJSON_GetArraySize(j_properties);
-            tile->properties = calloc(tile->property_count, sizeof(Property));
-            const cJSON * j_property = NULL;
-            int property_index = 0;
-            cJSON_ArrayForEach(j_property, j_properties) {
-                Property * property = &tile->properties[property_index];
-                const cJSON * j_name = cJSON_GetObjectItemCaseSensitive(j_property, "name");
-                if (!cJSON_IsString(j_name)) {
-                    log_error("Failed to parse tile property name");
-                    exit(1);
-                }
-                property->name = calloc(strlen(j_name->valuestring) + 1, sizeof(char));
-                strcpy(property->name, j_name->valuestring);
-
-                const cJSON * j_type = cJSON_GetObjectItemCaseSensitive(j_property, "type");
-                if (cJSON_IsString(j_type)) {
-                    property->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
-                    strcpy(property->type, j_type->valuestring);
-                }
-
-                const cJSON * j_propertytype = cJSON_GetObjectItemCaseSensitive(j_property, "propertytype");
-                if (cJSON_IsString(j_propertytype)) {
-                    property->propertytype = calloc(strlen(j_propertytype->valuestring) + 1, sizeof(char));
-                    strcpy(property->propertytype, j_propertytype->valuestring);
-                }
-                
-
-                const cJSON * j_value = cJSON_GetObjectItemCaseSensitive(j_property, "value");
-                if (cJSON_IsString(j_value)) {
-                    property->string_value = calloc(strlen(j_value->valuestring) + 1, sizeof(char));
-                    strcpy(property->string_value, j_value->valuestring);
-                } else if (cJSON_IsNumber(j_value)) {
-                    property->int_value = j_value->valueint;
-                    property->float_value = j_value->valuedouble;
-                } else if (cJSON_IsBool(j_value)) {
-                    property->bool_value = j_value->valueint;
-                } else {
-                    log_warn("Property type not supported");
-                } 
-                property_index++;
-            }
-        }
-        // Handle Objects
-        const cJSON * j_objectgroup = cJSON_GetObjectItemCaseSensitive(j_tile, "objectgroup");
-        if (cJSON_IsObject(j_objectgroup)) {
-            const cJSON * j_objects = cJSON_GetObjectItemCaseSensitive(j_objectgroup, "objects");
-            if (cJSON_IsArray(j_objects)) {
-                const cJSON * j_object = NULL;
-                tile->objectgroup_count = cJSON_GetArraySize(j_objects);
-                tile->objectgroup = calloc(tile->objectgroup_count, sizeof(Layer));
-                int object_index = 0;
-                cJSON_ArrayForEach(j_object, j_objects) {
-                    Layer * object = &tile->objectgroup[object_index];
-                    const cJSON * j_x = cJSON_GetObjectItemCaseSensitive(j_object, "x");
-                    if (!cJSON_IsNumber(j_x)) {
-                        log_error("Failed to parse object x");
-                        exit(1);
-                    }
-                    object->x = j_x->valueint;
-                    const cJSON * j_y = cJSON_GetObjectItemCaseSensitive(j_object, "y");
-                    if (!cJSON_IsNumber(j_y)) {
-                        log_error("Failed to parse object y");
-                        exit(1);
-                    }
-                    object->y = j_y->valueint;
-                    const cJSON * j_width = cJSON_GetObjectItemCaseSensitive(j_object, "width");
-                    if (!cJSON_IsNumber(j_width)) {
-                        log_error("Failed to parse object width");
-                        exit(1);
-                    }
-                    object->width = j_width->valueint;
-                    const cJSON * j_height = cJSON_GetObjectItemCaseSensitive(j_object, "height");
-                    if (!cJSON_IsNumber(j_height)) {
-                        log_error("Failed to parse object height");
-                        exit(1);
-                    }
-                    object->height = j_height->valueint;
-                    const cJSON * j_type = cJSON_GetObjectItemCaseSensitive(j_object, "type");
-                    if (cJSON_IsString(j_type)) {
-                        object->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
-                        strcpy(object->type, j_type->valuestring);
-                    }
-                    const cJSON * j_name = cJSON_GetObjectItemCaseSensitive(j_object, "name");
-                    if (cJSON_IsString(j_name)) {
-                        object->name = calloc(strlen(j_name->valuestring) + 1, sizeof(char));
-                        strcpy(object->name, j_name->valuestring);
-                    }
-                    const cJSON * j_visible = cJSON_GetObjectItemCaseSensitive(j_object, "visible");
-                    if (!cJSON_IsBool(j_visible)) {
-                        object->visible = j_visible->valueint;
-                    }
-                }
-                object_index++;
-            }
-        }
-    
-        const cJSON * j_animation = cJSON_GetObjectItemCaseSensitive(j_tile, "animation");
-        // Handle animation
-        if (cJSON_IsArray(j_animation)) {
-            // Allocate animation memory
-            tile->animation_count = cJSON_GetArraySize(j_animation);
-            tile->animation = calloc(tile->animation_count, sizeof(Frame));
-            if (tile->animation == NULL) {
-                log_error("Failed to allocate animation memory");
+        const cJSON *j_tile = NULL;
+        int tile_index = 0;
+        cJSON_ArrayForEach(j_tile, j_tiles) {
+            Tile * tile = &tileset->tiles[tile_index];
+            const cJSON * j_id = cJSON_GetObjectItemCaseSensitive(j_tile, "id");
+            if (!cJSON_IsNumber(j_id)) {
+                log_error("Failed to parse tile id");
                 exit(1);
             }
-
-            const cJSON *j_frame = NULL;
-            size_t animation_index = 0;
-            cJSON_ArrayForEach(j_frame, j_animation) {
-                Frame * frame = &tile->animation[animation_index];
-                const cJSON *j_duration = cJSON_GetObjectItemCaseSensitive(j_frame, "duration");
-                if (!cJSON_IsNumber(j_duration)) {
-                    log_error("Failed to parse tile duration");
-                    exit(1);
-                }
-                const cJSON *j_tileid = cJSON_GetObjectItemCaseSensitive(j_frame, "tileid");
-                if (!cJSON_IsNumber(j_tileid)) {
-                    log_error("Failed to parse tile tileid");
-                    exit(1);
-                }
-                frame->duration = j_duration->valueint;
-                frame->tileid = j_tileid->valueint;
-                animation_index++;
+            log_debug("Loading tile id: %d", j_id->valueint);
+            tile->id = j_id->valueint;
+            const cJSON * j_image = cJSON_GetObjectItemCaseSensitive(j_tile, "image");
+            if (cJSON_IsString(j_image)) {
+                tile->image = calloc(strlen(j_image->valuestring) + 1, sizeof(char));
+                strcpy(tile->image, j_image->valuestring);
             }
+
+            const cJSON * j_imageheight = cJSON_GetObjectItemCaseSensitive(j_tile, "imageheight");
+            if (cJSON_IsNumber(j_imageheight)) {
+                tile->imageheight = j_imageheight->valueint;
+            }
+            const cJSON * j_imagewidth = cJSON_GetObjectItemCaseSensitive(j_tile, "imagewidth");
+            if (cJSON_IsNumber(j_imagewidth)) {
+                tile->imagewidth = j_imagewidth->valueint;
+            }
+            const cJSON * j_type = cJSON_GetObjectItemCaseSensitive(j_tile, "type");
+            if (cJSON_IsString(j_type)) {
+                tile->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
+                strcpy(tile->type, j_type->valuestring);
+            }
+            // Handle properties
+            tileset_parse_properties(j_tile, tile);
+            // Handle objectgroup
+            tileset_parse_objectgroup(j_tile, tile);
+            // Handle animation
+            tileset_parse_animation(j_tile, tile);
+            
+            tile_index++;
         }
-        tile_index++;
     }
 
     log_info("Loaded tileset name: %s, tile width: %d, tile height: %d, tilecount: %d file: %s size: %d bytes", j_name->valuestring, j_tile_width->valueint, j_tile_height->valueint, j_tilecount->valueint, filename, fsize);
@@ -306,7 +320,7 @@ Tile * tileset_get_tile_by_id(Tileset * tileset, int tile_id, bool local) {
     if (!local) {
         local_tile_id = (tile_id & TILE_ID_MASK) - 1;
     }
-    for (int i = 0; i < tileset->num_tiles; i++) {
+    for (int i = 0; i < tileset->tile_count; i++) {
         if (tileset->tiles[i].id == local_tile_id) {
             return tileset->tiles + i;
         }
@@ -314,20 +328,29 @@ Tile * tileset_get_tile_by_id(Tileset * tileset, int tile_id, bool local) {
     return NULL;
 }
 
-void tileset_render_tile(App * app, Tileset * tileset, int global_tile_id, int x, int y, bool animated) {
-    uint32_t tileid = global_tile_id & TILE_ID_MASK;
-    if (tileid == 0) {
-        // Skip rendering empty tiles
+void tileset_render_tile(App * app, Tileset * tileset, int tile_id,bool local_tile_id, int x, int y, bool animated) {
+    if (tile_id == 0 && !local_tile_id) {
+        // Skip rendering global empty tiles
         return;
     }
-    tileid--; // Convert to local tile id
-    Tile * tile = tileset_get_tile_by_id(tileset, tileid, true);
+    uint32_t flags = 0;
+    uint32_t tileid = tile_id;
+    Tile * tile = NULL;
+    if (!local_tile_id) {
+        flags = tile_id & TILE_FLAG_MASK;
+        tileid = (tile_id & TILE_ID_MASK) - 1;
+    } 
+
+    tile = tileset_get_tile_by_id(tileset, tileid, true);
+    
+    
     if (tile != NULL) {
         // Check if tile is animated
         if (tile->animation != NULL && animated) {
             tileid = tileset_get_current_animation_tileid(tile);
         }
     }
+    // log_debug("Rendering tile %d pos: [%d %d] animated: %d", tileid, x, y, animated);
     int columns = tileset->columns;
     int tile_x = tileid % columns;
     int tile_y = tileid / columns;
@@ -353,7 +376,7 @@ void tileset_render_tile(App * app, Tileset * tileset, int global_tile_id, int x
     dest.h = tile_height;
 
     SDL_RendererFlip flip = SDL_FLIP_NONE;
-    uint32_t flags = global_tile_id & TILE_FLAG_MASK;
+    
     // Read flip from tile flags
     if (flags & FLIPPED_HORIZONTALLY_FLAG) {
         flip |= SDL_FLIP_HORIZONTAL;

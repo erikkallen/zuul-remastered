@@ -211,11 +211,12 @@ typedef struct Tileset
     uint32_t num_tiles;
 
     Tile *tiles;
+    uint32_t tile_count;
     SDL_Texture *texture;
 } Tileset;
 
 Tileset * tileset_load(App * app, const char * filename);
 void tileset_free(Tileset *tiles);
-void tileset_render_tile(App * app, Tileset * tileset, int global_tile_id, int x, int y, bool animated);
-Tile * tileset_get_tile_by_id(Tileset * tileset, int local_tile_id, bool local);
+void tileset_render_tile(App * app, Tileset * tileset, int tileid,bool local_tile_id, int x, int y, bool animated);
+Tile * tileset_get_tile_by_id(Tileset * tileset, int tile_id, bool local);
 #endif

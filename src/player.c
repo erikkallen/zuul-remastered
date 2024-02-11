@@ -67,7 +67,7 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
     // Get bounding box position
     for (int i=0;i<player_tile->objectgroup_count;i++) {
         Layer * objectgroup = player_tile->objectgroup;
-        log_debug("Object x: %d y: %d width: %d height: %d type: %s", objectgroup[i].x, objectgroup[i].y, objectgroup[i].width, objectgroup[i].height, objectgroup[i].type);
+        // log_debug("Object x: %d y: %d width: %d height: %d type: %s", objectgroup[i].x, objectgroup[i].y, objectgroup[i].width, objectgroup[i].height, objectgroup[i].type);
         if (strcmp(objectgroup[i].type, "collision_box") == 0) {
             bounding_box_x = (player_x + objectgroup[i].x);
             bounding_box_y = (player_y + objectgroup[i].y);
@@ -183,8 +183,8 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
 void player_draw(App * app, struct Entity *entity)
 {
 	// Draw player
-    int player_x = entity->x + app->camera->x + entity->dx;
-    int player_y = entity->y + app->camera->y + entity->dy;
+    // int player_x = entity->x + app->camera->x + entity->dx;
+    // int player_y = entity->y + app->camera->y + entity->dy;
 
     // SDL_Rect player_rect = {player_x, player_y, entity->width, entity->height};
     // SDL_SetRenderDrawColor(app->renderer,0,0,255,255);
@@ -193,7 +193,7 @@ void player_draw(App * app, struct Entity *entity)
     // SDL_SetRenderDrawColor(app->renderer,255,0,0,255);
     // SDL_RenderDrawPoint(app->renderer,player_x,player_y);
     // Get player bounding box as SDL_Rect
-    tileset_render_tile(app, entity->tileset, entity->facing, entity->x, entity->y, entity->move_speed > 0 ? 1 : 0);
+    tileset_render_tile(app, entity->tileset, entity->facing, true, entity->x, entity->y, entity->move_speed > 0 ? 1 : 0);
 }
 
 void player_free(struct Entity * player) {
