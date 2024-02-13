@@ -44,8 +44,7 @@ static void tileset_parse_properties(const cJSON *j_tile, Tile * tile) {
                 property->string_value = calloc(strlen(j_value->valuestring) + 1, sizeof(char));
                 strcpy(property->string_value, j_value->valuestring);
             } else if (cJSON_IsNumber(j_value)) {
-                property->int_value = j_value->valueint;
-                property->float_value = j_value->valuedouble;
+                property->number_value = cJSON_GetNumberValue(j_value);
             } else if (cJSON_IsBool(j_value)) {
                 property->bool_value = j_value->valueint;
             } else {

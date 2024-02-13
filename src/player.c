@@ -4,6 +4,7 @@
 #include "draw.h"
 #include "tileset.h"
 #include "player.h"
+#include <math.h>
 
 // Logging
 #include <log.h>
@@ -98,6 +99,37 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
                 //}
                 // player->dx = 0;
                 // player->dy = 0;
+                break;
+            }
+        }
+    }
+    // Map object collision check
+    for (int i=0;i<map->layer_count;i++) {
+        Layer * layer = &map->layers[i];
+        if (strcmp(layer->type, "objectgroup") != 0) {
+            continue;
+        }
+        // log_debug("Checking objects in layer: %s count: %d", map->layers[i].name, map->layers[i].object_count);
+        for (int j=0;j<layer->object_count;j++) {
+            Object * object = &layer->objects[j];
+            // Read property for warp
+            for (int k=0;k<object->property_count;k++) {
+                // log_debug("Object property: %s", object->properties[k].name);
+                Property * property = &object->properties[k];
+                if (strcmp(property->name, "warp") != 0) {
+                    continue;
+                }
+                if (strcmp(property->type, "int") != 0) {
+                    continue;
+                }
+                SDL_Point object_point = {(int)object->x, (int)object->y};
+                if (!SDL_PointInRect(&object_point, &player_rect)) {
+                    continue;
+                }
+                // Warp point detected
+                int map_id = property->number_value;
+                log_debug("Warp detected to: %d", map_id);
+                // map_init(app, map, map->tileset, "../assets/house.tmj");
                 break;
             }
         }

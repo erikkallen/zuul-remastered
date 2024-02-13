@@ -63,8 +63,7 @@ typedef struct Property
     union
     {
         char *string_value;
-        int int_value;
-        double float_value;
+        double number_value;
         bool bool_value;
         char *color_value;
         char *file_value;
@@ -149,7 +148,7 @@ typedef struct Layer
     uint32_t layer_count;
     char* name;
     size_t object_count;
-    struct Object* objects;
+    Object* objects;
     double offsetx;
     double offsety;
     double parallaxx;

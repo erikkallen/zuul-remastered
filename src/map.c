@@ -87,14 +87,15 @@ static void map_parse_properties(const cJSON *j_object, Object * object) {
             
 
             const cJSON * j_value = cJSON_GetObjectItemCaseSensitive(j_property, "value");
-            if (cJSON_IsString(j_value)) {
-                property->string_value = calloc(strlen(j_value->valuestring) + 1, sizeof(char));
-                strcpy(property->string_value, j_value->valuestring);
-            } else if (cJSON_IsNumber(j_value)) {
-                property->int_value = j_value->valueint;
-                property->float_value = j_value->valuedouble;
+            if (cJSON_IsNumber(j_value)) {
+                log_debug("Property value: %d", j_value->valueint);
+                property->number_value = cJSON_GetNumberValue(j_value);
+                //property->float_value = cJSON_GetNumberValue(j_value);
             } else if (cJSON_IsBool(j_value)) {
                 property->bool_value = j_value->valueint;
+            } else if (cJSON_IsString(j_value)) {
+                property->string_value = calloc(strlen(j_value->valuestring) + 1, sizeof(char));
+                strcpy(property->string_value, j_value->valuestring);
             } else {
                 log_warn("Property type not supported");
             } 
@@ -104,16 +105,16 @@ static void map_parse_properties(const cJSON *j_object, Object * object) {
 }
 
 static void map_parse_object_layer(const cJSON * j_layer, Layer * layer) {
-    // Read json data
     const cJSON *j_objects = cJSON_GetObjectItemCaseSensitive(j_layer, "objects");
     if (cJSON_IsArray(j_objects)) {
         // Allocate tiles for layer
         layer->object_count = cJSON_GetArraySize(j_objects);
-        layer->objects = calloc(layer->width * layer->height, sizeof(uint32_t));
+        layer->objects = calloc(layer->object_count, sizeof(Object));
         if (layer->objects == NULL) {
             log_error("Failed to allocate map object data");
             exit(1);
         }
+        log_debug("Parsing objects %d", layer->object_count);
         int object_index = 0;
         const cJSON *j_object;
         cJSON_ArrayForEach(j_object, j_objects) {
@@ -220,7 +221,13 @@ int map_load(App * app, Map * map, const char *filename) {
         Layer * layer = &map->layers[layer_index];
         layer->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
         strcpy(layer->type, j_type->valuestring);
-        if (strcmp(j_type->valuestring, "objectlayer") == 0) {
+        // Read json data
+        const cJSON *j_name = cJSON_GetObjectItemCaseSensitive(j_layer, "name");
+        if (cJSON_IsString(j_name)) {
+            layer->name = calloc(strlen(j_name->valuestring) + 1, sizeof(char));
+            strcpy(layer->name, j_name->valuestring);
+        }
+        if (strcmp(j_type->valuestring, "objectgroup") == 0) {
             map_parse_object_layer(j_layer, layer);
         }
         if (strcmp(j_type->valuestring, "tilelayer") == 0) {
@@ -310,6 +317,9 @@ void map_free(Map * map) {
         if (map->layers[i].type != NULL) {
             free(map->layers[i].type);
         }
+        if (map->layers[i].name != NULL) {
+            free(map->layers[i].name);
+        }
     }
     free(map->layers);
 }
@@ -345,7 +355,7 @@ uint32_t map_get_tile_id_at_row_col(Map * map, int layer_index, int col, int row
         return 0;
     }
     if (row < 0 || col < 0 || row > (layer->width) || row > (layer->height)) {
-        log_error("Tile index out of range %d %d %s", row, col), layer->type;
+        log_error("Tile index out of range %d %d %s", row, col, layer->type);
         return 0;
     }
 
