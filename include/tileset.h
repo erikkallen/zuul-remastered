@@ -114,6 +114,7 @@ typedef struct Object
     bool point; // Used to mark an object as a point
     Point* polygon; // Array of Points, in case the object is a polygon
     Point* polyline; // Array of Points, in case the object is a polyline
+    size_t property_count; // Number of Properties
     Property* properties; // Array of Properties
     double rotation; // Angle in degrees clockwise
     char* template; // Reference to a template file, in case object is a template instance
@@ -147,11 +148,13 @@ typedef struct Layer
     struct Layer *layers; // Array of Layers
     uint32_t layer_count;
     char* name;
+    size_t object_count;
     struct Object* objects;
     double offsetx;
     double offsety;
     double parallaxx;
     double parallaxy;
+    size_t property_count;
     struct Property* properties;
     bool repeatx;
     bool repeaty;

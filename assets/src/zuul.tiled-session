@@ -11,10 +11,18 @@
     "fileStates": {
         "/home/erikkallen/Projects/erik/zuul/assets/home.tmj": {
             "scale": 2,
-            "selectedLayer": 0,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 644.25,
-                "y": 541.75
+                "x": 535.75,
+                "y": 600.25
+            }
+        },
+        "/home/erikkallen/Projects/erik/zuul/assets/house.tmj": {
+            "scale": 1.6300292968749999,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 640.1725429110626,
+                "y": 512.56747446305
             }
         },
         "/home/erikkallen/Projects/erik/zuul/assets/map_tiles.tsj": {
@@ -56,18 +64,18 @@
     },
     "frame.defaultDuration": 750,
     "last.imagePath": "/home/erikkallen/Projects/erik/zuul/assets",
-    "map.height": 128,
+    "map.height": 32,
     "map.lastUsedFormat": "json",
-    "map.tileHeight": 16,
-    "map.tileWidth": 16,
-    "map.width": 128,
+    "map.tileHeight": 32,
+    "map.tileWidth": 32,
+    "map.width": 40,
     "openFiles": [
         "/home/erikkallen/Projects/erik/zuul/assets/home.tmj",
         "/home/erikkallen/Projects/erik/zuul/assets/player_tiles.tsj",
         "/home/erikkallen/Projects/erik/zuul/assets/map_tiles.tsj"
     ],
     "project": "zuul.tiled-project",
-    "property.type": "bool",
+    "property.type": "int",
     "recentFiles": [
         "/home/erikkallen/Projects/erik/zuul/assets/player_tiles.tsj",
         "/home/erikkallen/Projects/erik/zuul/assets/map_tiles.tsj",

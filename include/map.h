@@ -40,6 +40,6 @@ void map_free(Map *map);
 uint32_t map_get_tile_id_at_x_y(Map * map, int layer_index, int x, int y);
 uint32_t map_get_tile_id_at_row_col(Map * map, int layer_index, int row, int col) ;
 Tile * map_get_tile_at(Map * map, int x, int y);
-bool map_check_collision(Map * map, int col, int row, SDL_Rect * bb_rect) ;
+bool map_check_collision(Map * map, int col, int row, SDL_Rect * bb_rect);
 
 #endif

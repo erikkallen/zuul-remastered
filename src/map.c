@@ -17,6 +17,137 @@
 #define MAP_TILE_HEIGHT 64
 #define MAP_ANIMATION_FRAMES 2
 
+static void map_parse_tile_layer(const cJSON * j_layer, Layer * layer) {
+    const cJSON *j_width = cJSON_GetObjectItemCaseSensitive(j_layer, "width");
+    if (!cJSON_IsNumber(j_width)) {
+        log_error("Failed to parse layer width");
+        exit(1);
+    }
+    const cJSON *j_height = cJSON_GetObjectItemCaseSensitive(j_layer, "height");
+    if (!cJSON_IsNumber(j_height)) {
+        log_error("Failed to parse layer height");
+        exit(1);
+    }
+
+    layer->width = j_width->valueint;
+    layer->height = j_height->valueint;
+
+    // Read json data
+    const cJSON *j_data = cJSON_GetObjectItemCaseSensitive(j_layer, "data");
+    if (cJSON_IsArray(j_data)) {
+        // Allocate tiles for layer
+        layer->data = calloc(layer->width * layer->height, sizeof(uint32_t));
+        if (layer->data == NULL) {
+            log_error("Failed to allocate map data");
+            exit(1);
+        }
+        int data_index = 0;
+        const cJSON *j_gid;
+        cJSON_ArrayForEach(j_gid, j_data) {
+            if (!cJSON_IsNumber(j_gid)) {
+                log_error("Failed to parse map tile");
+                exit(1);
+            }
+
+            // Read flags
+            layer->data[data_index] = j_gid->valueint;
+            data_index++;
+        }
+    }
+}
+
+static void map_parse_properties(const cJSON *j_object, Object * object) {
+    const cJSON * j_properties = cJSON_GetObjectItemCaseSensitive(j_object, "properties");
+    if (cJSON_IsArray(j_properties)) {
+        object->property_count = cJSON_GetArraySize(j_properties);
+        object->properties = calloc(object->property_count, sizeof(Property));
+        const cJSON * j_property = NULL;
+        int property_index = 0;
+        cJSON_ArrayForEach(j_property, j_properties) {
+            Property * property = &object->properties[property_index];
+            const cJSON * j_name = cJSON_GetObjectItemCaseSensitive(j_property, "name");
+            if (!cJSON_IsString(j_name)) {
+                log_error("Failed to parse object property name");
+                exit(1);
+            }
+            property->name = calloc(strlen(j_name->valuestring) + 1, sizeof(char));
+            strcpy(property->name, j_name->valuestring);
+
+            const cJSON * j_type = cJSON_GetObjectItemCaseSensitive(j_property, "type");
+            if (cJSON_IsString(j_type)) {
+                property->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
+                strcpy(property->type, j_type->valuestring);
+            }
+
+            const cJSON * j_propertytype = cJSON_GetObjectItemCaseSensitive(j_property, "propertytype");
+            if (cJSON_IsString(j_propertytype)) {
+                property->propertytype = calloc(strlen(j_propertytype->valuestring) + 1, sizeof(char));
+                strcpy(property->propertytype, j_propertytype->valuestring);
+            }
+            
+
+            const cJSON * j_value = cJSON_GetObjectItemCaseSensitive(j_property, "value");
+            if (cJSON_IsString(j_value)) {
+                property->string_value = calloc(strlen(j_value->valuestring) + 1, sizeof(char));
+                strcpy(property->string_value, j_value->valuestring);
+            } else if (cJSON_IsNumber(j_value)) {
+                property->int_value = j_value->valueint;
+                property->float_value = j_value->valuedouble;
+            } else if (cJSON_IsBool(j_value)) {
+                property->bool_value = j_value->valueint;
+            } else {
+                log_warn("Property type not supported");
+            } 
+            property_index++;
+        }
+    }
+}
+
+static void map_parse_object_layer(const cJSON * j_layer, Layer * layer) {
+    // Read json data
+    const cJSON *j_objects = cJSON_GetObjectItemCaseSensitive(j_layer, "objects");
+    if (cJSON_IsArray(j_objects)) {
+        // Allocate tiles for layer
+        layer->object_count = cJSON_GetArraySize(j_objects);
+        layer->objects = calloc(layer->width * layer->height, sizeof(uint32_t));
+        if (layer->objects == NULL) {
+            log_error("Failed to allocate map object data");
+            exit(1);
+        }
+        int object_index = 0;
+        const cJSON *j_object;
+        cJSON_ArrayForEach(j_object, j_objects) {
+            Object * object = &layer->objects[object_index];
+            const cJSON *j_width = cJSON_GetObjectItemCaseSensitive(j_object, "width");
+            if (!cJSON_IsNumber(j_width)) {
+                log_error("Failed to parse layer width");
+                exit(1);
+            }
+            const cJSON *j_height = cJSON_GetObjectItemCaseSensitive(j_object, "height");
+            if (!cJSON_IsNumber(j_height)) {
+                log_error("Failed to parse layer height");
+                exit(1);
+            }
+            const cJSON *j_x = cJSON_GetObjectItemCaseSensitive(j_object, "x");
+            if (!cJSON_IsNumber(j_x)) {
+                log_error("Failed to parse layer x");
+                exit(1);
+            }
+            const cJSON *j_y = cJSON_GetObjectItemCaseSensitive(j_object, "y");
+            if (!cJSON_IsNumber(j_y)) {
+                log_error("Failed to parse layer y");
+                exit(1);
+            }
+
+            object->width = j_width->valueint;
+            object->height = j_height->valueint;
+            object->x = j_x->valueint;
+            object->y = j_y->valueint;
+            map_parse_properties(j_object, object);
+            object_index++;
+        }
+    }
+}
 
 int map_load(App * app, Map * map, const char *filename) {
     // Read map file into buffer
@@ -37,8 +168,10 @@ int map_load(App * app, Map * map, const char *filename) {
 
     // Load json map data
     cJSON *map_json = cJSON_Parse(string);
-    
-    
+    if (map_json == NULL) {
+        log_error("Failed to parse map json");
+        exit(1);
+    }
     const cJSON * j_height = cJSON_GetObjectItemCaseSensitive(map_json, "height");
     if (!cJSON_IsNumber(j_height)) {
         log_error("Failed to parse map height");
@@ -78,48 +211,20 @@ int map_load(App * app, Map * map, const char *filename) {
     const cJSON *j_layer;
     int layer_index = 0;
     cJSON_ArrayForEach(j_layer, j_layers) {
-        // Read json data
-        const cJSON *j_data = cJSON_GetObjectItemCaseSensitive(j_layer, "data");
-        if (!cJSON_IsArray(j_data)) {
-            log_error("Failed to parse map data");
+        // Check layer type
+        const cJSON *j_type = cJSON_GetObjectItemCaseSensitive(j_layer, "type");
+        if (!cJSON_IsString(j_type)) {
+            log_error("Failed to parse layer type");
             exit(1);
         }
-        const cJSON *j_width = cJSON_GetObjectItemCaseSensitive(j_layer, "width");
-        if (!cJSON_IsNumber(j_width)) {
-            log_error("Failed to parse layer width");
-            exit(1);
-        }
-        const cJSON *j_height = cJSON_GetObjectItemCaseSensitive(j_layer, "height");
-        if (!cJSON_IsNumber(j_height)) {
-            log_error("Failed to parse layer height");
-            exit(1);
-        }
-
-        // Allocate layer
-        log_debug("Allocating layer");
-        // Set layer pointer to next layer
         Layer * layer = &map->layers[layer_index];
-        
-        layer->width = j_width->valueint;
-        layer->height = j_height->valueint;
-
-        // Allocate tiles for layer
-        layer->data = calloc(layer->width * layer->height, sizeof(uint32_t));
-        if (layer->data == NULL) {
-            log_error("Failed to allocate map data");
-            exit(1);
+        layer->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
+        strcpy(layer->type, j_type->valuestring);
+        if (strcmp(j_type->valuestring, "objectlayer") == 0) {
+            map_parse_object_layer(j_layer, layer);
         }
-        int data_index = 0;
-        const cJSON *j_gid;
-        cJSON_ArrayForEach(j_gid, j_data) {
-            if (!cJSON_IsNumber(j_gid)) {
-                log_error("Failed to parse map tile");
-                exit(1);
-            }
-
-            // Read flags
-            layer->data[data_index] = j_gid->valueint;
-            data_index++;
+        if (strcmp(j_type->valuestring, "tilelayer") == 0) {
+            map_parse_tile_layer(j_layer, layer);
         }
         layer_index++;
     }
@@ -128,24 +233,9 @@ int map_load(App * app, Map * map, const char *filename) {
     free(string);
     return 0;
 }
+
+
 // Load map tiles using tiles.tsj json file for meta info
-/* 
-example data
-{ "columns":2,
- "image":"..\/tiles.png",
- "imageheight":128,
- "imagewidth":64,
- "margin":0,
- "name":"tiles",
- "spacing":0,
- "tilecount":8,
- "tiledversion":"1.10.2",
- "tileheight":32,
- "tilewidth":32,
- "type":"tileset",
- "version":"1.10"
-}
-*/
 
 void map_init(App *app, Map * map, Tileset * tileset, const char *filename) {
     map->tileset = tileset;
@@ -211,7 +301,15 @@ void map_draw(App * app, Map * map) {
 void map_free(Map * map) {
     // Free all layers
     for (int i = 0; i < map->layer_count; i++) {
-        free(map->layers[i].data);
+        if (map->layers[i].data != NULL) {
+            free(map->layers[i].data);
+        }
+        if (map->layers[i].objects != NULL) {
+            free(map->layers[i].objects);
+        }
+        if (map->layers[i].type != NULL) {
+            free(map->layers[i].type);
+        }
     }
     free(map->layers);
 }
@@ -241,8 +339,13 @@ uint32_t map_get_tile_id_at_row_col(Map * map, int layer_index, int col, int row
         return 0;
     }
     Layer * layer = &map->layers[layer_index];
+    // Check if layer is tile layer
+    if (layer->type != NULL && strcmp(layer->type, "tilelayer") != 0) {
+        //log_error("Layer is not a tile layer");
+        return 0;
+    }
     if (row < 0 || col < 0 || row > (layer->width) || row > (layer->height)) {
-        log_error("Tile index out of range");
+        log_error("Tile index out of range %d %d %s", row, col), layer->type;
         return 0;
     }
 
