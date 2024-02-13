@@ -10,19 +10,25 @@
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "/home/erikkallen/Projects/erik/zuul/assets/home.tmj": {
+            "expandedObjectLayers": [
+                6
+            ],
             "scale": 2,
-            "selectedLayer": 2,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 535.75,
-                "y": 600.25
+                "x": 877.75,
+                "y": 760.75
             }
         },
         "/home/erikkallen/Projects/erik/zuul/assets/house.tmj": {
+            "expandedObjectLayers": [
+                2
+            ],
             "scale": 1.6300292968749999,
-            "selectedLayer": 1,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 640.1725429110626,
-                "y": 512.56747446305
+                "x": 622.9949375430608,
+                "y": 529.7450798310516
             }
         },
         "/home/erikkallen/Projects/erik/zuul/assets/map_tiles.tsj": {
@@ -75,7 +81,7 @@
         "/home/erikkallen/Projects/erik/zuul/assets/map_tiles.tsj"
     ],
     "project": "zuul.tiled-project",
-    "property.type": "int",
+    "property.type": "string",
     "recentFiles": [
         "/home/erikkallen/Projects/erik/zuul/assets/player_tiles.tsj",
         "/home/erikkallen/Projects/erik/zuul/assets/map_tiles.tsj",

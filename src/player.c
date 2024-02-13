@@ -119,7 +119,7 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
                 if (strcmp(property->name, "warp") != 0) {
                     continue;
                 }
-                if (strcmp(property->type, "int") != 0) {
+                if (strcmp(property->type, "string") != 0) {
                     continue;
                 }
                 SDL_Point object_point = {(int)object->x, (int)object->y};
@@ -127,9 +127,11 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
                     continue;
                 }
                 // Warp point detected
-                int map_id = property->number_value;
-                log_debug("Warp detected to: %d", map_id);
-                // map_init(app, map, map->tileset, "../assets/house.tmj");
+                log_debug("Warp detected to: %s", property->string_value);
+                char path[255];
+                snprintf(path, 255, "../assets/%s", property->string_value);
+                map_free(map);
+                map_init(app, map, map->tileset, path);
                 break;
             }
         }

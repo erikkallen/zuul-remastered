@@ -117,8 +117,8 @@
                  "properties":[
                         {
                          "name":"warp",
-                         "type":"int",
-                         "value":1
+                         "type":"string",
+                         "value":"house.tmj"
                         }],
                  "rotation":0,
                  "type":"",
