@@ -85,8 +85,8 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
     int player_tile_row = bounding_box_y / map->tileheight;
     int player_tile_col_end = (bounding_box_x + bounding_box_width) / map->tilewidth;
     int player_tile_row_end = (bounding_box_y + bounding_box_height) / map->tileheight;
-    for (int i=player_tile_col;i <= player_tile_col_end + 1; i++) {
-        for (int j=player_tile_row;j <= player_tile_row_end + 1; j++) {
+    for (int i=player_tile_col;i <= player_tile_col_end; i++) {
+        for (int j=player_tile_row;j <= player_tile_row_end; j++) {
             //log_debug("Checking collision at x: %d y: %d", i, j);
             if (map_check_collision(map, i, j, &player_rect)) {
                 log_debug("Collision detected at x: %d [%d %d] y: %d [%d %d]", i,player_tile_col, player_tile_col_end, j, player_tile_row, player_tile_row_end);
@@ -144,11 +144,12 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
                 snprintf(path, 255, "../assets/%s", property->string_value);
                 map_free(map);
                 map_init(app, map, map->tileset, path);
-                break;
+                // Break out of loop or else data is corrupted by free
+                goto end;
             }
         }
     }
-
+end:
 
     // Keep player in the center of the camera until the camera hits the edge of the map
     // X Axis movement
@@ -220,7 +221,6 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
     if (player->y > camera->height - player->height) {
         player->y = camera->height - player->height;
     }
-
     // Reset player dx and dy
     player->dx = 0;
     player->dy = 0;

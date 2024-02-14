@@ -222,6 +222,11 @@ int map_load(Map * map, const char *filename) {
         }
         Layer * layer = &map->layers[layer_index];
         layer->type = calloc(strlen(j_type->valuestring) + 1, sizeof(char));
+        layer->object_count = 0;
+        layer->objects = NULL;
+        layer->data = NULL;
+        layer->width = 0;
+        layer->height = 0;
         strcpy(layer->type, j_type->valuestring);
         // Read json data
         const cJSON *j_name = cJSON_GetObjectItemCaseSensitive(j_layer, "name");
