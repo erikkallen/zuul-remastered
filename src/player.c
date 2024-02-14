@@ -106,16 +106,28 @@ void player_handle(App * app, Map * map, Camera *camera, struct Entity * player)
     // Map object collision check
     for (int i=0;i<map->layer_count;i++) {
         Layer * layer = &map->layers[i];
+        if (layer == NULL) {
+            continue;
+        }
         if (strcmp(layer->type, "objectgroup") != 0) {
             continue;
         }
         // log_debug("Checking objects in layer: %s count: %d", map->layers[i].name, map->layers[i].object_count);
         for (int j=0;j<layer->object_count;j++) {
             Object * object = &layer->objects[j];
+            if (object == NULL) {
+                continue;
+            }
             // Read property for warp
             for (int k=0;k<object->property_count;k++) {
                 // log_debug("Object property: %s", object->properties[k].name);
                 Property * property = &object->properties[k];
+                if (property == NULL) {
+                    continue;
+                }
+                if (property->name == NULL || property->type == NULL) {
+                    continue;
+                }
                 if (strcmp(property->name, "warp") != 0) {
                     continue;
                 }

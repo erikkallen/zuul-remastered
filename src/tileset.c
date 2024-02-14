@@ -11,8 +11,9 @@
 
 static void tileset_parse_properties(const cJSON *j_tile, Tile * tile) {
     const cJSON * j_properties = cJSON_GetObjectItemCaseSensitive(j_tile, "properties");
+    tile->property_count = cJSON_GetArraySize(j_properties);
+    tile->properties = NULL;
     if (cJSON_IsArray(j_properties)) {
-        tile->property_count = cJSON_GetArraySize(j_properties);
         tile->properties = calloc(tile->property_count, sizeof(Property));
         const cJSON * j_property = NULL;
         int property_index = 0;
@@ -59,9 +60,10 @@ static void tileset_parse_objectgroup(const cJSON *j_tile, Tile * tile) {
     const cJSON * j_objectgroup = cJSON_GetObjectItemCaseSensitive(j_tile, "objectgroup");
     if (cJSON_IsObject(j_objectgroup)) {
         const cJSON * j_objects = cJSON_GetObjectItemCaseSensitive(j_objectgroup, "objects");
+        tile->objectgroup_count = cJSON_GetArraySize(j_objects);
+        tile->objectgroup = NULL;
         if (cJSON_IsArray(j_objects)) {
             const cJSON * j_object = NULL;
-            tile->objectgroup_count = cJSON_GetArraySize(j_objects);
             tile->objectgroup = calloc(tile->objectgroup_count, sizeof(Layer));
             int object_index = 0;
             cJSON_ArrayForEach(j_object, j_objects) {
@@ -112,10 +114,11 @@ static void tileset_parse_objectgroup(const cJSON *j_tile, Tile * tile) {
 
 static void tileset_parse_animation(const cJSON *j_tile, Tile * tile) {
     const cJSON * j_animation = cJSON_GetObjectItemCaseSensitive(j_tile, "animation");
+    tile->animation_count = cJSON_GetArraySize(j_animation);
+    tile->animation = NULL;
     // Handle animation
     if (cJSON_IsArray(j_animation)) {
         // Allocate animation memory
-        tile->animation_count = cJSON_GetArraySize(j_animation);
         tile->animation = calloc(tile->animation_count, sizeof(Frame));
         if (tile->animation == NULL) {
             log_error("Failed to allocate animation memory");

@@ -58,8 +58,9 @@ static void map_parse_tile_layer(const cJSON * j_layer, Layer * layer) {
 
 static void map_parse_properties(const cJSON *j_object, Object * object) {
     const cJSON * j_properties = cJSON_GetObjectItemCaseSensitive(j_object, "properties");
+    object->property_count = cJSON_GetArraySize(j_properties);
+    object->properties = NULL;
     if (cJSON_IsArray(j_properties)) {
-        object->property_count = cJSON_GetArraySize(j_properties);
         object->properties = calloc(object->property_count, sizeof(Property));
         const cJSON * j_property = NULL;
         int property_index = 0;
@@ -106,9 +107,10 @@ static void map_parse_properties(const cJSON *j_object, Object * object) {
 
 static void map_parse_object_layer(const cJSON * j_layer, Layer * layer) {
     const cJSON *j_objects = cJSON_GetObjectItemCaseSensitive(j_layer, "objects");
+    layer->object_count = cJSON_GetArraySize(j_objects);
+    layer->objects = NULL;
     if (cJSON_IsArray(j_objects)) {
         // Allocate tiles for layer
-        layer->object_count = cJSON_GetArraySize(j_objects);
         layer->objects = calloc(layer->object_count, sizeof(Object));
         if (layer->objects == NULL) {
             log_error("Failed to allocate map object data");
