@@ -150,7 +150,7 @@ static void map_parse_object_layer(const cJSON * j_layer, Layer * layer) {
     }
 }
 
-int map_load(App * app, Map * map, const char *filename) {
+int map_load(Map * map, const char *filename) {
     // Read map file into buffer
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
@@ -246,7 +246,7 @@ int map_load(App * app, Map * map, const char *filename) {
 
 void map_init(App *app, Map * map, Tileset * tileset, const char *filename) {
     map->tileset = tileset;
-    map_load(app, map, filename);
+    map_load(map, filename);
 }
 
 void map_draw_layer(App * app, Map * map, Layer * layer) {
@@ -312,6 +312,23 @@ void map_free(Map * map) {
             free(map->layers[i].data);
         }
         if (map->layers[i].objects != NULL) {
+            for (int j = 0; j < map->layers[i].object_count; j++) {
+                for (int k = 0; k < map->layers[i].objects[j].property_count; k++) {
+                    if (map->layers[i].objects[j].properties[k].name != NULL) {
+                        free(map->layers[i].objects[j].properties[k].name);
+                    }
+                    if (map->layers[i].objects[j].properties[k].type != NULL) {
+                        free(map->layers[i].objects[j].properties[k].type);
+                    }
+                    if (map->layers[i].objects[j].properties[k].propertytype != NULL) {
+                        free(map->layers[i].objects[j].properties[k].propertytype);
+                    }
+                    if (map->layers[i].objects[j].properties[k].string_value != NULL) {
+                        free(map->layers[i].objects[j].properties[k].string_value);
+                    }
+                }
+                free(map->layers[i].objects[j].properties);
+            }
             free(map->layers[i].objects);
         }
         if (map->layers[i].type != NULL) {

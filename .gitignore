@@ -12,3 +12,4 @@ meson-private/
 # VScode
 .vscode/
 .vscode-ctags
+assets/src/zuul.tiled-session

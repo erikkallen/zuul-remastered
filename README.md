@@ -36,3 +36,8 @@ ninja
 # If you are in the build folder for example
 ./zuul ../assets/
 ```
+
+## Testing
+```bash
+meson test --wrap=valgrind 'map memory test'
+```
