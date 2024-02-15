@@ -38,6 +38,22 @@ ninja
 ```
 
 ## Testing
+
 ```bash
 meson test --wrap=valgrind 'map memory test'
 ```
+
+## Map making
+
+For mapmaking I used Tiled. Currently the following features are supported in the engine:
+
+- Multiple layers
+- Animations using the tiled animation editor
+- Multiple size tiles should work (tested 32, 16 and 128px)
+- Primitive map loading using objects with a string property called "warp" and the value is the name of the map.tmj (alpha still needs a lot of work) 
+
+## Thanks to the following projects for their awesome tools/libraries
+
+- [Tiled](https://www.mapeditor.org/)
+- [Pixelorama](https://github.com/Orama-Interactive/Pixelorama)
+- [SDL](https://www.libsdl.org/)

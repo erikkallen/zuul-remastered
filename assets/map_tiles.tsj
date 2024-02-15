@@ -1,11 +1,11 @@
 { "columns":8,
  "image":"map_tiles.png",
- "imageheight":256,
+ "imageheight":288,
  "imagewidth":256,
  "margin":0,
  "name":"map_tiles",
  "spacing":0,
- "tilecount":64,
+ "tilecount":72,
  "tiledversion":"1.10.2",
  "tileheight":32,
  "tiles":[
@@ -338,6 +338,68 @@
         }, 
         {
          "id":50,
+         "properties":[
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":true
+                }]
+        }, 
+        {
+         "animation":[
+                {
+                 "duration":400,
+                 "tileid":64
+                }, 
+                {
+                 "duration":400,
+                 "tileid":65
+                }, 
+                {
+                 "duration":400,
+                 "tileid":66
+                }, 
+                {
+                 "duration":400,
+                 "tileid":67
+                }],
+         "id":64,
+         "properties":[
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":true
+                }]
+        }, 
+        {
+         "id":65,
+         "properties":[
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":true
+                }]
+        }, 
+        {
+         "id":66,
+         "properties":[
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":true
+                }]
+        }, 
+        {
+         "id":67,
+         "properties":[
+                {
+                 "name":"solid",
+                 "type":"bool",
+                 "value":true
+                }]
+        }, 
+        {
+         "id":68,
          "properties":[
                 {
                  "name":"solid",
