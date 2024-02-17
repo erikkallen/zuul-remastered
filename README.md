@@ -33,10 +33,12 @@ ninja
 ## Running
 
 ```bash
+# Copy the assets.json to the directory you built the projects e.g. <project_root>/build
+cp assets/assets.json build/
+# Update paths in the assets file if needed
+sed -i 's|"path": "../assets"|"path": "./new_assets_path"|g' build/assets.json
 # Make sure you are in the directory where you built the project
-./zuul <path to assets folder>
-# If you are in the build folder for example
-./zuul ../assets/
+./zuul
 ```
 
 ## Testing
@@ -52,7 +54,8 @@ For mapmaking I used Tiled. Currently the following features are supported in th
 - Multiple layers
 - Animations using the tiled animation editor
 - Multiple size tiles should work (tested 32, 16 and 128px)
-- Primitive map loading using objects with a string property called "warp" and the value is the name of the map.tmj (alpha still needs a lot of work) 
+- Primitive map loading using objects with a string property called "warp" and the value is the name of the map and coordinates on the destination map: map.tmj:x,y
+- 
 
 ## Thanks to the following projects for their awesome tools/libraries/inspiration
 
@@ -61,3 +64,5 @@ For mapmaking I used Tiled. Currently the following features are supported in th
 - [SDL](https://www.libsdl.org/)
 - [Kenny](https://www.kenney.nl/assets/roguelike-rpg-pack)
 - [cJSON](https://github.com/DaveGamble/cJSON)
+- [log.c](https://github.com/rxi/log.c)
+- 
