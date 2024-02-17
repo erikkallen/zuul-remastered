@@ -11,9 +11,10 @@
 #define PLAYER_FACING_UP 3
 #define PLAYER_FACING_DOWN 0
 
-int player_init(App *app, struct Entity *player, Tileset *tileset);
-void player_handle(App *app, Map *map, Camera * camera, struct Entity *player);
-void player_draw(App *app, struct Entity *player);
-void player_free(struct Entity *player);
+int player_init(App *app, Tileset *tileset);
+void player_handle(App *app, Map *map, Camera * camera);
+void player_draw(App *app);
+void player_free();
+void player_move_to(Camera * camera,Map *map, int x, int y);
 
 #endif

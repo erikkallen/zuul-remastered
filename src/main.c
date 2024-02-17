@@ -50,7 +50,6 @@ int main(int argc, char* argv[]) {
     App app = {0};
 
     Map map = {0};
-    struct Entity player;
     long then;
 	float remainder = 0;
 
@@ -61,21 +60,21 @@ int main(int argc, char* argv[]) {
     asset_init();
     Tileset * map_tiles = tileset_load(&app, asset_path("map_tiles.tsj"));
     Tileset * player_tiles = tileset_load(&app, asset_path("player_tiles.tsj"));
+    Camera camera = make_camera(&app, 1280, 720);
+    app.camera = &camera;
     
-    player_init(&app, &player, player_tiles);
-    map_init(&app, &map, map_tiles, asset_path("home.tmj"));
+    player_init(&app, player_tiles);
+    map_init(&map, map_tiles, asset_path("home.tmj"));
 
     then = SDL_GetTicks();
     //Camera camera = make_camera(&app, SCREEN_WIDTH, SCREEN_HEIGHT);
-    Camera camera = make_camera(&app, 1280, 720);
-    app.camera = &camera;
     
     while (1) {
         draw_prepare_scene(&app, camera.target);
         input_handle(&app);
-        player_handle(&app, &map, &camera, &player);
+        player_handle(&app, &map, &camera);
         map_draw(&app, &map);
-        player_draw(&app, &player);
+        player_draw(&app);
         // Screen
         draw_prepare_scene(&app, NULL);
         draw_camera_to_screen(&app, &camera);
@@ -84,7 +83,7 @@ int main(int argc, char* argv[]) {
 
     SDL_DestroyRenderer(app.renderer);
     SDL_DestroyWindow(app.window);
-    player_free(&player);
+    player_free();
     tileset_free(player_tiles);
     tileset_free(map_tiles);
     map_free(&map);

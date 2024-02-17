@@ -96,20 +96,32 @@
                 {
                  "height":0,
                  "id":1,
-                 "name":"",
+                 "name":"warp",
                  "point":true,
                  "properties":[
                         {
                          "name":"warp",
                          "type":"string",
-                         "value":"home.tmj"
+                         "value":"home.tmj:863,810"
                         }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":623.301680496061,
-                 "y":1011.6382589941
+                 "x":621.968347162728,
+                 "y":1019.6382589941
+                }, 
+                {
+                 "gid":75,
+                 "height":32,
+                 "id":4,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":607.666666666667,
+                 "y":982.333333333333
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -117,8 +129,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":4,
- "nextobjectid":2,
+ "nextlayerid":5,
+ "nextobjectid":5,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.10.2",
@@ -127,6 +139,10 @@
         {
          "firstgid":1,
          "source":"map_tiles.tsj"
+        }, 
+        {
+         "firstgid":73,
+         "source":"player_tiles.tsj"
         }],
  "tilewidth":32,
  "type":"map",

@@ -11,6 +11,8 @@ struct Entity
 {
     int x;
     int y;
+    int x_abs;
+    int y_abs;
     int width;
     int height;
     float dx;
