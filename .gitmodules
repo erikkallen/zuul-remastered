@@ -4,3 +4,6 @@
 [submodule "lib/hshg"]
 	path = lib/hshg
 	url = https://github.com/supahero1/hshg.git
+[submodule "lib/hashmap.c"]
+	path = lib/hashmap.c
+	url = https://github.com/tidwall/hashmap.c.git

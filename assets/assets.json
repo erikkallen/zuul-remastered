@@ -1,0 +1,28 @@
+{
+    "assets": [
+        {
+            "name": "map_tiles.tsj",
+            "path": "../assets"
+        },
+        {   
+            "name": "player_tiles.tsj",
+            "path": "../assets"
+        },
+        {
+            "name": "home.tmj",
+            "path": "../assets"
+        },
+        {
+            "name": "house.tmj",
+            "path": "../assets"
+        },
+        {
+            "name": "map_tiles.png",
+            "path": "../assets"
+        },
+        {
+            "name": "player_tiles.png",
+            "path": "../assets"
+        }
+    ]
+}

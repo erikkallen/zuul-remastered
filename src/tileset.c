@@ -4,6 +4,7 @@
 #include "tileset.h"
 #include "structs.h"
 #include "draw.h"
+#include "assets.h"
 
 // Logging
 #include <log.h>
@@ -287,11 +288,8 @@ Tileset * tileset_load(App * app, const char * filename) {
     log_info("Loaded tileset name: %s, tile width: %d, tile height: %d, tilecount: %d file: %s size: %d bytes", j_name->valuestring, j_tile_width->valueint, j_tile_height->valueint, j_tilecount->valueint, filename, fsize);
     tileset->rows = tileset->num_tiles / tileset->columns;
     // Load tileset texture
-    char texture_path[256];
-    strcpy(texture_path, app->assets_path);
-    strcat(texture_path, j_image->valuestring);
     log_info("Loading tileset texture: %s", j_image->valuestring);
-    tileset->texture = IMG_LoadTexture(app->renderer, texture_path);
+    tileset->texture = IMG_LoadTexture(app->renderer, asset_path(j_image->valuestring));
     SDL_assert(tileset->texture != NULL);
     
     cJSON_Delete(tile_json);

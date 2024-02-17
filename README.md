@@ -60,3 +60,4 @@ For mapmaking I used Tiled. Currently the following features are supported in th
 - [Pixelorama](https://github.com/Orama-Interactive/Pixelorama)
 - [SDL](https://www.libsdl.org/)
 - [Kenny](https://www.kenney.nl/assets/roguelike-rpg-pack)
+- [cJSON](https://github.com/DaveGamble/cJSON)

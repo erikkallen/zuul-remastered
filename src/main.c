@@ -17,6 +17,7 @@
 #include "player.h"
 #include "map.h"
 #include "tileset.h"
+#include "assets.h"
 
 // Logging
 #include <log.h>
@@ -53,22 +54,16 @@ int main(int argc, char* argv[]) {
     long then;
 	float remainder = 0;
 
-    // Read assets path string from command line
-    if (argc < 2) {
-        log_error("Usage: %s <assets path>", argv[0]);
-        exit(1);
-    }
-    app.assets_path = argv[1];
-
     log_info("Starting up...");
     // Init SDL
     init_sdl(&app);
     // Init tilesets
-    Tileset * map_tiles = tileset_load(&app, "../assets/map_tiles.tsj");
-    Tileset * player_tiles = tileset_load(&app, "../assets/player_tiles.tsj");
+    asset_init();
+    Tileset * map_tiles = tileset_load(&app, asset_path("map_tiles.tsj"));
+    Tileset * player_tiles = tileset_load(&app, asset_path("player_tiles.tsj"));
     
     player_init(&app, &player, player_tiles);
-    map_init(&app, &map, map_tiles, "../assets/home.tmj");
+    map_init(&app, &map, map_tiles, asset_path("home.tmj"));
 
     then = SDL_GetTicks();
     //Camera camera = make_camera(&app, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -93,6 +88,7 @@ int main(int argc, char* argv[]) {
     tileset_free(player_tiles);
     tileset_free(map_tiles);
     map_free(&map);
+    asset_free();
     IMG_Quit();
     SDL_Quit();
 
