@@ -44,7 +44,7 @@ sed -i 's|"path": "../assets"|"path": "./new_assets_path"|g' build/assets.json
 ## Testing
 
 ```bash
-meson test --wrap=valgrind 'map memory test'
+meson test
 ```
 
 ## Map making
