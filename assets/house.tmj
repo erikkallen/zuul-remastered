@@ -145,7 +145,7 @@
                         {
                          "name":"warp",
                          "type":"string",
-                         "value":"home.tmj:863,810"
+                         "value":"home.tmj:863,778"
                         }],
                  "rotation":0,
                  "type":"",
@@ -155,7 +155,7 @@
                  "y":1001.05492566077
                 }, 
                 {
-                 "gid":91,
+                 "gid":107,
                  "height":32,
                  "id":4,
                  "name":"",
@@ -184,7 +184,7 @@
          "source":"map_tiles.tsj"
         }, 
         {
-         "firstgid":89,
+         "firstgid":105,
          "source":"player_tiles.tsj"
         }],
  "tilewidth":32,

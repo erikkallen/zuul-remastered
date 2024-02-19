@@ -15,6 +15,6 @@ int player_init(App *app, Tileset *tileset);
 void player_handle(App *app, Map *map, Camera * camera);
 void player_draw(App *app);
 void player_free();
-void player_move_to(Camera * camera,Map *map, int x, int y);
-
+void player_move(Map *map);
+struct Entity * player_get();
 #endif

@@ -75,6 +75,7 @@ int main(int argc, char* argv[]) {
         player_handle(&app, &map, &camera);
         map_draw(&app, &map);
         player_draw(&app);
+        camera_update(&camera, player_get(), map.width*map.tilewidth, map.height*map.tileheight);
         // Screen
         draw_prepare_scene(&app, NULL);
         draw_camera_to_screen(&app, &camera);

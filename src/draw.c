@@ -46,3 +46,22 @@ void draw_camera_to_screen(App *app, Camera *camera) {
         SDL_RenderCopy(app->renderer, camera->target, NULL, &dst);
 		SDL_RenderPresent(app->renderer);
 }
+
+void camera_update(Camera * camera, struct Entity * player, int map_width, int map_height) {
+    // Center camera on map
+    camera->x = player->x - (camera->width / 2) + (player->width/2);
+    camera->y = player->y - (camera->height / 2) + (player->height/2);
+    // Prevent camera from moving outside of map
+    if (camera->x < 0) {
+        camera->x = 0;
+    }
+    if (camera->y < 0) {
+        camera->y = 0;
+    }
+    if (camera->x > map_width - camera->width) {
+        camera->x = map_width - camera->width;
+    }
+    if (camera->y > map_height - camera->height) {
+        camera->y = map_height - camera->height;
+    }
+}

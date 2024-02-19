@@ -9,4 +9,5 @@
 Camera make_camera(App *app, int width, int height);
 void draw_prepare_scene(App *app, SDL_Texture *target);
 void draw_camera_to_screen(App *app, Camera *camera);
+void camera_update(Camera * camera, struct Entity * player, int map_width, int map_height);
 #endif

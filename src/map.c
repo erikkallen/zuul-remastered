@@ -418,7 +418,7 @@ Tile * map_get_tile_at(Map * map, int col, int row) {
  * @return true Collision detected
  * @return false Collision not detected
  */
-bool map_check_tile_collision(Map * map, int col, int row, SDL_Rect * bb_rect) {
+bool map_check_tile_collision(Map * map, int col, int row, SDL_Rect * bb_rect, SDL_Rect * intersection) {
     Tile * tile = map_get_tile_at(map, col, row);
     if (tile == NULL || bb_rect == NULL) {
         return false;
@@ -426,15 +426,13 @@ bool map_check_tile_collision(Map * map, int col, int row, SDL_Rect * bb_rect) {
     SDL_Rect rect = {col * map->tilewidth, row * map->tileheight, map->tilewidth, map->tileheight};
     for (int i=0;i<tile->property_count;i++) {
         if (strcmp(tile->properties[i].name, "solid") == 0 && tile->properties[i].bool_value == true) {
-            if (SDL_HasIntersection(&rect, bb_rect)) {
-                return true;
-            }
+            return SDL_IntersectRect(&rect, bb_rect, intersection);
         }
     }
     return false;
 }
 
-bool map_check_object_collisions(Map * map, const char * name, SDL_Rect * player_rect, void (*collision_callback)(Property * property, void * data)) {
+bool map_check_object_collisions(Map * map, const char * name, SDL_Rect * player_rect, void (*collision_callback)(Property * property, void * data), void* data) {
     for (int i=0;i<map->layer_count;i++) {
         Layer * layer = &map->layers[i];
         if (layer == NULL) {
@@ -471,7 +469,7 @@ bool map_check_object_collisions(Map * map, const char * name, SDL_Rect * player
                 }
                 // Callback collision function
                 log_debug("Collision detected with object: %s", property->string_value);
-                collision_callback(property, map);
+                collision_callback(property, data);
                 return true;
             }
         }

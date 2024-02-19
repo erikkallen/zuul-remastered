@@ -12,44 +12,24 @@
 #include <log.h>
 
 struct Entity player;
-Camera * cam;
 
 #define PLAYER_BORDER_DISTANCE 10
+
+
 int player_init(App * app, Tileset * tileset) {
-    player.x = 101;
-    player.y = 101;
+    player.x = 160;
+    player.y = 187;
+    
     player.width = tileset->tile_width;
     player.height = tileset->tile_height;
     player.tileset = tileset;
-    player.facing = PLAYER_FACING_RIGHT;
+    player.facing = PLAYER_FACING_DOWN;
     // Ugly hack to get the player to start in the middle of the screen
-    cam = app->camera;
     return 0;
 }
 
-void camera_bounds_check(Camera * camera, Map * map) {
-// Prevent camera from moving outside of map
-    if (camera->x < 0) {
-        camera->x = 0;
-    }
-    if (camera->y < 0) {
-        camera->y = 0;
-    }
-    if (camera->x > (map->width * map->tilewidth) - camera->width) {
-        camera->x = (map->width * map->tilewidth) - camera->width;
-    }
-    if (camera->y > (map->height * map->tileheight) - camera->height) {
-        camera->y = (map->height * map->tileheight) - camera->height;
-    }
-}
-
-void player_reset_camera(Camera * camera, Map * map, int to_x, int to_y) {
-    cam->x = to_x - (cam->width/2);
-    cam->y = to_y - (cam->height/2);
-    camera_bounds_check(cam, map);
-    player.x = to_x - cam->x;
-    // Dont know why we need to subtract the player height
-    player.y = to_y - cam->y - (player.height);
+struct Entity * player_get() {
+    return &player;
 }
 
 void collision_callback(Property *property, void *data) {
@@ -73,7 +53,8 @@ void collision_callback(Property *property, void *data) {
         // log_debug("Map width: %d height: %d", map->width, map->height);
         // log_debug("Player x: %d y: %d", player.x, player.y);
 
-        player_reset_camera(cam, map, to_x, to_y);
+        player.x = to_x;
+        player.y = to_y;
         // log_debug("Player x: %d y: %d dx: %f dy: %f",player.x, player.y,  player.dx, player.dy);
     } else {
         // Parsing failed
@@ -108,7 +89,7 @@ void player_handle(App * app, Map * map, Camera *camera) {
         player.move_speed = 0;
     }
     
-    player_move_to(camera, map, player.x, player.y);
+    player_move(map);
     // log_debug("Player x: %d y: %d abs %d %d",player.x, player.y, player.x_abs, player.y_abs);
 }
 
@@ -143,7 +124,7 @@ SDL_Rect player_get_collision_rect(int x, int y) {
     return rect;
 }
 
-bool player_check_map_collision(Map * map, SDL_Rect * player_rect) {
+bool player_check_map_collision(Map * map, SDL_Rect * player_rect, SDL_Rect * intersection) {
     // Check for collision for each_tile under the player
     int player_tile_col = player_rect->x / map->tilewidth;
     int player_tile_row = player_rect->y / map->tileheight;
@@ -152,10 +133,11 @@ bool player_check_map_collision(Map * map, SDL_Rect * player_rect) {
     for (int i=player_tile_col;i <= player_tile_col_end; i++) {
         for (int j=player_tile_row;j <= player_tile_row_end; j++) {
             //log_debug("Checking collision at x: %d y: %d", i, j);
-            if (map_check_tile_collision(map, i, j, player_rect)) {
-                log_debug("Collision detected at x: %d [%d %d] y: %d [%d %d]", i,player_tile_col, player_tile_col_end, j, player_tile_row, player_tile_row_end);
+            if (map_check_tile_collision(map, i, j, player_rect, intersection)) {
+                //log_debug("Collision box x: %d y: %d w: %d h: %d", intersection->x, intersection->y, intersection->w, intersection->h);
                 // Prevent player from moving
                 // Fix player direction during collision
+                //log_debug("Collision detected at x: %d [%d %d] y: %d [%d %d]", i,player_tile_col, player_tile_col_end, j, player_tile_row, player_tile_row_end);
                 return true;
             }
         }
@@ -163,13 +145,13 @@ bool player_check_map_collision(Map * map, SDL_Rect * player_rect) {
     return false;
 }
 
-void player_move_to(Camera * camera, Map * map, int x, int y) {
-    player.x = x;
-    player.y = y;
-
+void player_move(Map * map) {
+    int map_width = map->width * map->tilewidth;
+    int map_height = map->height * map->tileheight;
     // Check collision in x direction
-    SDL_Rect player_rect = player_get_collision_rect(player.x_abs + player.dx, player.y_abs);
-    if (player_check_map_collision(map, &player_rect)) {
+    SDL_Rect player_rect = player_get_collision_rect(player.x + player.dx, player.y);
+    SDL_Rect distance = {0, 0, 0, 0};
+    if (player_check_map_collision(map, &player_rect, &distance)) {
         // Fix player direction during collision
         if (player.dy < 0) {
             // Move left
@@ -178,11 +160,12 @@ void player_move_to(Camera * camera, Map * map, int x, int y) {
             // Move right
             player.facing = PLAYER_FACING_DOWN;
         }
-        player.dx = 0;
+        log_debug("Collision detected at x: %d y: %d w: %d h: %d", player.x, player.y, distance.w, distance.h);
+        player.dx = PLAYER_SPEED - distance.w;
     }
     // Check collision in y direction
-    player_rect = player_get_collision_rect(player.x_abs, player.y_abs + player.dy);
-    if (player_check_map_collision(map, &player_rect)) {
+    player_rect = player_get_collision_rect(player.x, player.y + player.dy);
+    if (player_check_map_collision(map, &player_rect, &distance)) {
         // Fix player direction during collision
         if (player.dx < 0) {
             // Move up
@@ -191,56 +174,20 @@ void player_move_to(Camera * camera, Map * map, int x, int y) {
             // Move down
             player.facing = PLAYER_FACING_RIGHT;
         }
-        player.dy = 0;
+        log_debug("Collision detected at x: %d y: %d h: %d w: %d", player.x, player.y, distance.h, distance.w);
+        player.dy = PLAYER_SPEED - distance.h;
     }
     // Map object collision check
-    map_check_object_collisions(map, "warp", &player_rect, collision_callback);
+    map_check_object_collisions(map, "warp", &player_rect, collision_callback, map);
 
     // Keep player in the center of the camera until the camera hits the edge of the map
     // X Axis movement
-    if (player.dx < 0) {
-        // Move left
-        // Check if camera should move or player based on player position
-        if (player.x > (camera->width/2) - (player.width/2) || camera->x == 0) {
-            player.x += player.dx;
-        } else {
-            camera->x += player.dx;
-        }
-    } else {
-        // Move right
-        if (player.x < (camera->width/2) - (player.width/2) || camera->x == (map->width * map->tilewidth) - camera->width) {
-            player.x += player.dx;
-        } else {
-            camera->x += player.dx;
-        }
-    }
-
-    // Y Axis movement
-    if (player.dy < 0) {
-        // Move up
-        // Check if camera should move or player based on player position
-        if (player.y > (camera->height/2) - (player.height/2) || camera->y == 0) {
-            player.y += player.dy;
-        } else {
-            camera->y += player.dy;
-        }
-    } else {
-        // Move down
-        if (player.y < (camera->height/2) - (player.height/2) || camera->y == (map->height * map->tileheight) - camera->height) {
-            player.y += player.dy;
-        } else {
-            camera->y += player.dy;
-        }
-    }
+    
+    player.x += player.dx;
+    player.y += player.dy;
 
     // Debug camera position
     // log_debug("Camera x: %f y: %f", camera->x, camera->y);
-    // Debug player position
-    // log_debug("Player x: %d y: %d", player.x, player.y);
-
-
-    // Prevent camera from moving outside of map
-    camera_bounds_check(camera, map);
 
     // Prevent player from moving outside of map
     if (player.x < 0) {
@@ -249,24 +196,24 @@ void player_move_to(Camera * camera, Map * map, int x, int y) {
     if (player.y < 0) {
         player.y = 0;
     }
-    if (player.x > camera->width - player.width) {
-        player.x = camera->width - player.width;
+    if (player.x > map_width - player.width) {
+        player.x = map_width - player.width;
     }
-    if (player.y > camera->height - player.height) {
-        player.y = camera->height - player.height;
+    if (player.y > map_height - player.height) {
+        player.y = map_height - player.height;
     }
     // Reset player dx and dy
     player.dx = 0;
     player.dy = 0;
-    // Update player absolute position
-    player.x_abs = player.x + camera->x;
-    player.y_abs = player.y + camera->y;
+    // Debug player position
+    //log_debug("Player x: %d y: %d", player.x, player.y);
 }
 
 void player_draw(App * app)
 {
 	// Draw player
-    tileset_render_tile(app, player.tileset, player.facing, true, player.x, player.y, player.move_speed > 0 ? 1 : 0);
+    Camera * camera = app->camera;
+    tileset_render_tile(app, player.tileset, player.facing, true, player.x - camera->x, player.y - camera->y, player.move_speed > 0 ? 1 : 0);
 }
 
 void player_free() {

@@ -37,9 +37,10 @@ typedef struct Map
 void map_init(Map *map, Tileset *tileset, const char *filename);
 void map_draw(App *app, Map *map);
 void map_free(Map *map);
+int map_load(Map * map, const char *filename);
 uint32_t map_get_tile_id_at_x_y(Map * map, int layer_index, int x, int y);
 uint32_t map_get_tile_id_at_row_col(Map * map, int layer_index, int row, int col) ;
 Tile * map_get_tile_at(Map * map, int x, int y);
-bool map_check_tile_collision(Map * map, int col, int row, SDL_Rect * bb_rect);
-bool map_check_object_collisions(Map * map, const char * name, SDL_Rect * player_rect, void (*collision_callback)(Property * property, void * data)) ;
+bool map_check_tile_collision(Map * map, int col, int row, SDL_Rect * bb_rect, SDL_Rect * intersection);
+bool map_check_object_collisions(Map * map, const char * name, SDL_Rect * player_rect, void (*collision_callback)(Property * property, void * data), void* data) ;
 #endif

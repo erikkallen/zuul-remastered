@@ -4,7 +4,7 @@
 #define SPRITE_WIDTH 128
 #define SPRITE_HEIGHT 128
 
-#define PLAYER_SPEED 4
+#define PLAYER_SPEED 2
 
 #define MAX_FILENAME_LENGTH 256
 
