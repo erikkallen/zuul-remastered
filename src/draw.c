@@ -68,5 +68,5 @@ void camera_update(Camera * camera, struct Entity * player, int map_width, int m
 
 void entity_draw(App * app, Tileset * tileset, struct Entity * entity) {
 	// Draw entities
-    tileset_render_tile(app, tileset, PLAYER_FACING_DOWN, true, entity->x - app->camera->x, entity->y - app->camera->y, 0);
+    tileset_render_tile(app, tileset, entity->facing, true, entity->x - app->camera->x, entity->y - app->camera->y, 0);
 }

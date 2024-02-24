@@ -9,19 +9,20 @@
 
 struct Entity
 {
-    int x;
-    int y;
-    int x_abs;
-    int y_abs;
-    int width;
-    int height;
-    float dx;
-    float dy;
-    int health;
-    int facing;
-    int move_speed;
-    Tileset *tileset;
-    struct Entity *next;
+  int id;
+  int x;
+  int y;
+  int x_abs;
+  int y_abs;
+  int width;
+  int height;
+  float dx;
+  float dy;
+  int health;
+  int facing;
+  int move_speed;
+  Tileset* tileset;
+  struct Entity* next;
 };
 
 #endif

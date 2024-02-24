@@ -1,25 +1,22 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-typedef enum {
-        MOVE,
-        SHOOT,
-        HIT,
-        KILL,
-        CONNECT,
-        DISCONNECT
-    } NetPacketType;
+#include <stdint.h>
+
+typedef enum { MOVE, SHOOT, HIT, KILL, CONNECT, DISCONNECT } NetPacketType;
 
 typedef struct NetPacket {
-    NetPacketType type;
-    int x;
-    int y;
+  NetPacketType type;
+  int facing;
+  uint32_t id;
+  int x;
+  int y;
 
 } NetPacket;
 
-void network_init();
+uint32_t network_init();
 void network_destroy();
-void network_service(NetPacket *p);
+int network_service(NetPacket *p);
 void network_send(NetPacket *p);
 
 #endif

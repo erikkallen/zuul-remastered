@@ -8,14 +8,14 @@
 
 #include <log.h>
 
-ENetHost* client = {0};
-  ENetEvent event = {0};
-    ENetPeer* peer = {0};
+ENetHost *client = {0};
+ENetEvent event = {0};
+ENetPeer *peer = {0};
 
-void network_init() {
+uint32_t network_init() {
   if (enet_initialize() != 0) {
     fprintf(stderr, "An error occurred while initializing ENet.\n");
-    return;
+    return 0;
   }
 
   client = enet_host_create(NULL /* create a client host */,
@@ -30,8 +30,6 @@ void network_init() {
   }
 
   ENetAddress address = {0};
-
-
   /* Connect to some.server.net:1234. */
   enet_address_set_host(&address, "127.0.0.1");
   address.port = 7777;
@@ -43,49 +41,52 @@ void network_init() {
   }
 
   if (enet_host_service(client, &event, 3000) > 0 &&
-        event.type == ENET_EVENT_TYPE_CONNECT) {
-        log_info("Connection to some.server.net:1234 succeeded.");
-    } else {
-        /* Either the 5 seconds are up or a disconnect event was */
-        /* received. Reset the peer in the event the 5 seconds   */
-        /* had run out without any significant event.            */
-        enet_peer_reset(peer);
-        log_error("Connection to some.server.net:1234 failed.");
-    }
+      event.type == ENET_EVENT_TYPE_CONNECT) {
+    log_info("Connection to succeeded. id: %u", event.peer->connectID);
+    return event.peer->connectID;
+  } else {
+    /* Either the 5 seconds are up or a disconnect event was */
+    /* received. Reset the peer in the event the 5 seconds   */
+    /* had run out without any significant event.            */
+    enet_peer_reset(peer);
+    log_error("Connection to some.server.net:1234 failed.");
+  }
+  return 0;
 }
 
-void network_service(NetPacket *cp) {
-     if (enet_host_service(client, &event, 0) > 0) {
-        switch (event.type) {
-        case ENET_EVENT_TYPE_RECEIVE:
-            NetPacket * p = (NetPacket *)event.packet->data;
-            *cp = *p;
-            log_debug("Packet received: %d %d %d", p->type, p->x, p->y);
-            enet_packet_destroy(event.packet);
-            break;
-        case ENET_EVENT_TYPE_DISCONNECT:
-            log_info("Disconnection succeeded.");
-            // disconnected = true;
-            break;
-        default:
-            log_debug("Unhandled event");
-        }
+int network_service(NetPacket *cp) {
+  if (enet_host_service(client, &event, 0) > 0) {
+    switch (event.type) {
+    case ENET_EVENT_TYPE_RECEIVE: {
+      NetPacket *p = (NetPacket *)event.packet->data;
+      memcpy(cp, p, sizeof(NetPacket));
+      // log_debug("Packet received: %d %d %d %d", p->type, p->x, p->y, p->id);
+      enet_packet_destroy(event.packet);
+      return 0;
+    } break;
+    case ENET_EVENT_TYPE_DISCONNECT:
+      log_info("Disconnection succeeded.");
+      // disconnected = true;
+      break;
+    default:
+      log_debug("Unhandled event");
     }
+  }
+  return -1;
 }
 
 void network_send(NetPacket *p) {
-    /* Create a reliable packet of size 7 containing "packet\0" */
-    ENetPacket * packet = enet_packet_create (p, 
-                                            sizeof(*p), 
-                                            ENET_PACKET_FLAG_RELIABLE);
-    /* Extend the packet so and append the string "foo", so it now */
-    /* contains "packetfoo\0"                                      */
-    // enet_packet_resize (packet, strlen ("packetfoo") + 1);
-    // strcpy (& packet -> data [strlen ("packet")], "foo");
-    /* Send the packet to the peer over channel id 0. */
-    /* One could also broadcast the packet by         */
-    /* enet_host_broadcast (host, 0, packet);         */
-    enet_peer_send (peer, 0, packet);
+  /* Create a reliable packet of size 7 containing "packet\0" */
+  ENetPacket *packet =
+      enet_packet_create(p, sizeof(*p), ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT);
+  /* Extend the packet so and append the string "foo", so it now */
+  /* contains "packetfoo\0"                                      */
+  // enet_packet_resize (packet, strlen ("packetfoo") + 1);
+  // strcpy (& packet -> data [strlen ("packet")], "foo");
+  /* Send the packet to the peer over channel id 0. */
+  /* One could also broadcast the packet by         */
+  /* enet_host_broadcast (host, 0, packet);         */
+  enet_peer_send(peer, 0, packet);
 }
 
 void network_destroy() {
