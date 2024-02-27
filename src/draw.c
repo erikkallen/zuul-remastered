@@ -72,5 +72,5 @@ void entity_draw(App *app, Tileset *tileset, struct Entity *entity) {
   log_debug("Drawing entity %u pos %d %d", entity->id, entity->x, entity->y);
   tileset_render_tile(app, tileset, entity->facing, true,
                       entity->x - app->camera->x, entity->y - app->camera->y,
-                      0);
+                      entity->move_speed > 0 ? true : false);
 }

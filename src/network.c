@@ -62,6 +62,7 @@ int network_send_player_pos(struct Entity *player) {
   move_p.x = player->x;
   move_p.y = player->y;
   move_p.facing = player->facing;
+  move_p.move_speed = player->move_speed;
   network_send(&move_p);
   return 0;
 }
@@ -86,11 +87,7 @@ int network_service(NetPacket *cp, NetState *state) {
         enet_packet_destroy(event.packet);
         return -1;
       }
-      cp->x = p->x;
-      cp->y = p->y;
-      cp->id = p->id;
-      cp->type = p->type;
-
+      memcpy(cp, p, sizeof(NetPacket));
       log_debug("Packet received: %d %d %d %u", p->type, p->x, p->y, p->id);
       enet_packet_destroy(event.packet);
       return 0;

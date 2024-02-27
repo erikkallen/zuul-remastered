@@ -64,6 +64,8 @@ int main(int argc, char *argv[]) {
 
   Tileset *map_tiles = tileset_load(&app, asset_path("map_tiles.tsj"));
   Tileset *player_tiles = tileset_load(&app, asset_path("player_tiles.tsj"));
+  Tileset *net_player_tiles =
+      tileset_load(&app, asset_path("player_tiles_entire_outfit_green.tsj"));
   Camera camera = make_camera(&app, 1280, 720);
   app.camera = &camera;
 
@@ -116,6 +118,7 @@ int main(int argc, char *argv[]) {
               player_list[i].x = recv_p.x;
               player_list[i].y = recv_p.y;
               player_list[i].facing = recv_p.facing;
+              player_list[i].move_speed = recv_p.move_speed;
               // log_debug("Received move packet");
             }
           }
@@ -131,7 +134,7 @@ int main(int argc, char *argv[]) {
     if (player_list_size > 0) {
       for (int i = 0; i < player_list_size; i++) {
         // log_debug("Drawing player %u", player_list[i].id);
-        entity_draw(&app, player_tiles, &player_list[i]);
+        entity_draw(&app, net_player_tiles, &player_list[i]);
       }
     }
     camera_update(&camera, player_get(), map.width * map.tilewidth,

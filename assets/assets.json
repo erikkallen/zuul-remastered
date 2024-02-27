@@ -8,6 +8,10 @@
             "name": "player_tiles.tsj",
             "path": "../assets"
         },
+        {   
+            "name": "player_tiles_entire_outfit_green.tsj",
+            "path": "../assets"
+        },
         {
             "name": "home.tmj",
             "path": "../assets"
@@ -22,6 +26,10 @@
         },
         {
             "name": "player_tiles.png",
+            "path": "../assets"
+        },
+        {
+            "name": "player_tiles_entire_outfit_green.png",
             "path": "../assets"
         }
     ]

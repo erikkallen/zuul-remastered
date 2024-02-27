@@ -21,6 +21,7 @@ typedef struct NetPacket {
   uint32_t id;
   int x;
   int y;
+  int move_speed;
 
 } NetPacket;
 
