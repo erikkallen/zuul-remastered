@@ -56,7 +56,6 @@
          "objectgroup":
             {
              "draworder":"index",
-             "id":2,
              "name":"",
              "objects":[
                     {
@@ -82,11 +81,10 @@
          "objectgroup":
             {
              "draworder":"index",
-             "id":2,
              "name":"",
              "objects":[
                     {
-                    "height":32,
+                     "height":32,
                      "id":1,
                      "name":"",
                      "rotation":0,
@@ -128,7 +126,7 @@
              "name":"",
              "objects":[
                     {
-                    "height":32,
+                     "height":32,
                      "id":1,
                      "name":"",
                      "rotation":0,
@@ -150,7 +148,6 @@
          "objectgroup":
             {
              "draworder":"index",
-             "id":2,
              "name":"",
              "objects":[
                     {
@@ -176,7 +173,6 @@
          "objectgroup":
             {
              "draworder":"index",
-             "id":2,
              "name":"",
              "objects":[
                     {
@@ -244,11 +240,10 @@
          "objectgroup":
             {
              "draworder":"index",
-             "id":2,
              "name":"",
              "objects":[
                     {
-                    "height":32,
+                     "height":32,
                      "id":1,
                      "name":"",
                      "rotation":0,
@@ -270,7 +265,6 @@
          "objectgroup":
             {
              "draworder":"index",
-             "id":2,
              "name":"",
              "objects":[
                     {
@@ -316,7 +310,7 @@
              "name":"",
              "objects":[
                     {
-                    "height":32,
+                     "height":32,
                      "id":1,
                      "name":"",
                      "rotation":0,
@@ -338,7 +332,6 @@
          "objectgroup":
             {
              "draworder":"index",
-             "id":2,
              "name":"",
              "objects":[
                     {
@@ -364,11 +357,10 @@
          "objectgroup":
             {
              "draworder":"index",
-             "id":2,
              "name":"",
              "objects":[
                     {
-                    "height":32,
+                     "height":32,
                      "id":1,
                      "name":"",
                      "rotation":0,
@@ -387,5 +379,13 @@
         }],
  "tilewidth":32,
  "type":"tileset",
- "version":"1.10"
+ "version":"1.10",
+ "wangsets":[
+        {
+         "colors":[],
+         "name":"Unnamed Set",
+         "tile":-1,
+         "type":"corner",
+         "wangtiles":[]
+        }]
 }

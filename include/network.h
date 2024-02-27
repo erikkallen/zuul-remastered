@@ -1,9 +1,19 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+#include "player.h"
 #include <stdint.h>
 
-typedef enum { MOVE, SHOOT, HIT, KILL, CONNECT, DISCONNECT } NetPacketType;
+typedef enum {
+  ID,
+  MOVE,
+  SHOOT,
+  HIT,
+  KILL,
+  CONNECT,
+  DISCONNECT,
+  HOST_CONNECT
+} NetPacketType;
 
 typedef struct NetPacket {
   NetPacketType type;
@@ -14,9 +24,16 @@ typedef struct NetPacket {
 
 } NetPacket;
 
+typedef struct NetState {
+  uint32_t id;
+  int connected;
+} NetState;
+
 uint32_t network_init();
 void network_destroy();
-int network_service(NetPacket *p);
+int network_service(NetPacket *p, NetState *s);
 void network_send(NetPacket *p);
+int network_player_connect(uint32_t player_id);
+int network_send_player_pos(struct Entity *player);
 
 #endif

@@ -12,6 +12,8 @@ ENetHost *client = {0};
 ENetEvent event = {0};
 ENetPeer *peer = {0};
 
+uint32_t net_id = 0;
+
 uint32_t network_init() {
   if (enet_initialize() != 0) {
     fprintf(stderr, "An error occurred while initializing ENet.\n");
@@ -40,35 +42,67 @@ uint32_t network_init() {
     exit(EXIT_FAILURE);
   }
 
-  if (enet_host_service(client, &event, 3000) > 0 &&
-      event.type == ENET_EVENT_TYPE_CONNECT) {
-    log_info("Connection to succeeded. id: %u", event.peer->connectID);
-    return event.peer->connectID;
-  } else {
-    /* Either the 5 seconds are up or a disconnect event was */
-    /* received. Reset the peer in the event the 5 seconds   */
-    /* had run out without any significant event.            */
-    enet_peer_reset(peer);
-    log_error("Connection to some.server.net:1234 failed.");
-  }
   return 0;
 }
 
-int network_service(NetPacket *cp) {
+int network_player_connect(uint32_t player_id) {
+  // Generate player id
+  log_info("Sending connect %u packet", player_id);
+  NetPacket connect_p;
+  connect_p.type = CONNECT;
+  connect_p.id = player_id;
+  network_send(&connect_p);
+  return 0;
+}
+
+NetPacket move_p;
+int network_send_player_pos(struct Entity *player) {
+  move_p.type = MOVE;
+  move_p.id = player->id;
+  move_p.x = player->x;
+  move_p.y = player->y;
+  move_p.facing = player->facing;
+  network_send(&move_p);
+  return 0;
+}
+
+int network_service(NetPacket *cp, NetState *state) {
   if (enet_host_service(client, &event, 0) > 0) {
     switch (event.type) {
+    case ENET_EVENT_TYPE_CONNECT:
+      log_info("Connection  to host succeeded. %d", event.peer->connectID);
+      cp->type = HOST_CONNECT;
+      cp->id = event.peer->connectID;
+      return 0;
+      break;
     case ENET_EVENT_TYPE_RECEIVE: {
+      if (event.packet == NULL) {
+        log_error("Packet is NULL");
+        return -1;
+      }
       NetPacket *p = (NetPacket *)event.packet->data;
-      memcpy(cp, p, sizeof(NetPacket));
-      // log_debug("Packet received: %d %d %d %d", p->type, p->x, p->y, p->id);
+      if (p == NULL) {
+        log_error("Packet is NULL");
+        enet_packet_destroy(event.packet);
+        return -1;
+      }
+      cp->x = p->x;
+      cp->y = p->y;
+      cp->id = p->id;
+      cp->type = p->type;
+
+      log_debug("Packet received: %d %d %d %u", p->type, p->x, p->y, p->id);
       enet_packet_destroy(event.packet);
       return 0;
     } break;
     case ENET_EVENT_TYPE_DISCONNECT:
       log_info("Disconnection succeeded.");
       // disconnected = true;
+      event.peer->data = NULL;
       break;
     default:
+      enet_packet_destroy(event.packet);
+
       log_debug("Unhandled event");
     }
   }
@@ -78,18 +112,19 @@ int network_service(NetPacket *cp) {
 void network_send(NetPacket *p) {
   /* Create a reliable packet of size 7 containing "packet\0" */
   ENetPacket *packet =
-      enet_packet_create(p, sizeof(*p), ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT);
+      enet_packet_create(p, sizeof(NetPacket), ENET_PACKET_FLAG_RELIABLE);
   /* Extend the packet so and append the string "foo", so it now */
   /* contains "packetfoo\0"                                      */
   // enet_packet_resize (packet, strlen ("packetfoo") + 1);
   // strcpy (& packet -> data [strlen ("packet")], "foo");
   /* Send the packet to the peer over channel id 0. */
   /* One could also broadcast the packet by         */
-  /* enet_host_broadcast (host, 0, packet);         */
+  // enet_host_broadcast (client, 0, packet);
   enet_peer_send(peer, 0, packet);
 }
 
 void network_destroy() {
+  enet_peer_disconnect_now(peer, 0);
   enet_host_destroy(client);
   enet_deinitialize();
 }

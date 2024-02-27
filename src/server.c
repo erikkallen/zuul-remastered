@@ -4,61 +4,28 @@
 
 #include "network.h"
 
-#include <log.h>
+#include "log.h"
 
-// typedef struct client_node {
-//     uint32_t connectID; // You can add more client-related information here.
-//     struct client_node *next;
-// } client_node;
+#define MAX_CLIENTS 32
 
-// client_node * client_list = NULL;
+typedef struct {
+  uint32_t id;
+  bool connected;
+  float x;
+  float y;
+  uint8_t facing;
+} Player;
 
-// client_node* add_client(client_node *head, uint32_t connectID) {
-//     client_node *new_node = (client_node*)malloc(sizeof(client_node));
-//     if (new_node == NULL) {
-//         perror("Failed to allocate new node");
-//         exit(EXIT_FAILURE);
-//     }
-
-//     new_node->connectID = connectID;
-//     new_node->next = head; // Insert at the head for simplicity
-//     head = new_node;
-
-//     return head;
-// }
-
-// client_node* remove_client(client_node *head, int client_socket) {
-//     client_node *current = head;
-//     client_node *prev = NULL;
-
-//     while (current != NULL) {
-//         if (current->connectID == client_socket) {
-//             if (prev == NULL) {
-//                 head = current->next;
-//             } else {
-//                 prev->next = current->next;
-//             }
-//             free(current);
-//             break;
-//         }
-//         prev = current;
-//         current = current->next;
-//     }
-
-//     return head;
-// }
-
-// void free_clients(client_node * client_list) {
-//         while (client_list != NULL) {
-//         client_node *temp = client_list;
-//         client_list = client_list->next;
-//         free(temp);
-//     }
-// }
+// Player list
+Player *players = NULL;
+int player_count = 0;
 
 void broadcastToOthers(ENetHost *server, ENetEvent *event) {
   for (int i = 0; i < server->peerCount; ++i) {
     ENetPeer *peer = &server->peers[i];
+    if (peer->connectID == event->peer->connectID) {
+      continue;
+    }
 
     // Check if the peer is connected and is not the sender
     if (peer->state == ENET_PEER_STATE_CONNECTED && peer != event->peer) {
@@ -76,28 +43,75 @@ void broadcastToOthers(ENetHost *server, ENetEvent *event) {
   // enet_packet_destroy(event->packet);
 }
 
-int handle_add(ENetHost *server, ENetEvent *e) {
-  printf("A new client %u connected.\n", e->peer->connectID);
-  /* Store any relevant client information here. */
-  // Send connect packet of online players
-  log_info("Total players: %d", server->peerCount);
-  for (int i = 0; i < server->peerCount; ++i) {
-    ENetPeer *peer = &server->peers[i];
-    if (peer->state == ENET_PEER_STATE_CONNECTED) {
-      NetPacket p;
-      p.type = CONNECT;
-      p.id = peer->connectID;
-      p.x = 0;
-      p.y = 0;
-      log_debug("Sending connect %u packet to %u", peer->connectID,
-                e->peer->connectID);
-      ENetPacket *packet =
-          enet_packet_create(&p, sizeof(NetPacket), ENET_PACKET_FLAG_RELIABLE);
-      enet_peer_send(e->peer, 0, packet);
-      // enet_packet_destroy (packet);
+void broadcast_player_list(ENetHost *server, ENetEvent *e) {
+  // Check if the player is already in the list
+  bool found = false;
+  NetPacket *recv_p = (NetPacket *)e->packet->data;
+  if (recv_p == NULL) {
+    log_error("Packet is NULL");
+    return;
+  }
+
+  for (int i = 0; i < player_count; i++) {
+    if (players[i].id == recv_p->id) {
+      found = true;
     }
   }
-  return 0;
+
+  if (!found && player_count < MAX_CLIENTS) {
+    players = realloc(players, sizeof(Player) * (player_count + 1));
+    players[player_count].id = recv_p->id;
+    players[player_count].connected = true;
+    players[player_count].x = 0;
+    players[player_count].y = 0;
+    players[player_count].facing = 0;
+    player_count++;
+  }
+
+  // Send connect packet
+  for (int i = 0; i < player_count; ++i) {
+    if (players[i].connected == false) {
+      continue;
+    }
+    Player *player = &players[i];
+    NetPacket p;
+    p.type = CONNECT;
+    p.id = player->id;
+    p.x = 0;
+    p.y = 0;
+    log_debug("Sending connect %u packet to %u", player->id, recv_p->id);
+    // Handle connect packet
+    // broadcastToOthers(server, &event);
+    ENetPacket *packet =
+        enet_packet_create(&p, sizeof(NetPacket), ENET_PACKET_FLAG_RELIABLE);
+    enet_host_broadcast(server, 0, packet);
+  }
+}
+
+void handle_receive(ENetHost *server, ENetEvent *e) {
+  if (e->packet == NULL) {
+    log_error("Packet is NULL");
+    return;
+  }
+  NetPacket *p = (NetPacket *)e->packet->data;
+  if (p == NULL) {
+    log_error("Packet is NULL");
+    enet_packet_destroy(e->packet);
+    return;
+  }
+  switch (p->type) {
+  case CONNECT: {
+    broadcast_player_list(server, e);
+    break;
+  }
+  case MOVE: {
+    // Handle move packet
+    broadcastToOthers(server, e);
+    break;
+  }
+  default:
+    break;
+  }
 }
 
 int main() {
@@ -110,8 +124,6 @@ int main() {
 
   address.host = ENET_HOST_ANY; /* Bind the server to the default localhost. */
   address.port = 7777;          /* Bind the server to port 7777. */
-
-#define MAX_CLIENTS 32
 
   /* create a server */
   ENetHost *server = enet_host_create(&address, MAX_CLIENTS, 2, 0, 0);
@@ -126,36 +138,14 @@ int main() {
   ENetEvent event;
   while (true) {
     /* Wait up to 1000 milliseconds for an event. (WARNING: blocking) */
-    while (enet_host_service(server, &event, 100) > 0) {
+    if (enet_host_service(server, &event, 100) > 0) {
       switch (event.type) {
       case ENET_EVENT_TYPE_CONNECT:
-        handle_add(server, &event);
+        handle_receive(server, &event);
         break;
 
       case ENET_EVENT_TYPE_RECEIVE: {
-        // printf("A packet of length %lu containing %s was received from %s on
-        // channel %u.\n",
-        //         event.packet->dataLength,
-        //         (char *)event.packet->data,
-        //         (char *)event.peer->data,
-        //         event.channelID);
-        NetPacket *p = (NetPacket *)event.packet->data;
-        switch (p->type) {
-        case CONNECT:
-          // Handle connect packet
-          broadcastToOthers(server, &event);
-          break;
-        case MOVE:
-          // Handle move packet
-          broadcastToOthers(server, &event);
-          break;
-
-        default:
-          break;
-        }
-
-        // log_debug("Player at %d %d", p->x, p->y);
-        /* Clean up the packet now that we're done using it. */
+        handle_receive(server, &event);
         enet_packet_destroy(event.packet);
         break;
       }
@@ -163,6 +153,13 @@ int main() {
         printf("%s disconnected.\n", (char *)event.peer->data);
         /* Reset the peer's client information. */
         event.peer->data = NULL;
+        uint32_t player_count_temp = player_count;
+        for (int i = 0; i < player_count_temp; i++) {
+          if (players[i].id == event.peer->connectID) {
+            players[i].connected = false;
+            player_count--;
+          }
+        }
         // remove_client(client_list, event.peer->connectID);
         break;
 

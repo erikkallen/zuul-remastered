@@ -48,6 +48,7 @@ static void capFrameRate(uint32_t *then, float *remainder) {
 // Main function
 int main(int argc, char *argv[]) {
   App app = {0};
+  app.running = 1;
 
   Map map = {0};
   uint32_t then;
@@ -59,7 +60,7 @@ int main(int argc, char *argv[]) {
   // Init tilesets
   asset_init();
 
-  uint32_t net_id = network_init();
+  network_init();
 
   Tileset *map_tiles = tileset_load(&app, asset_path("map_tiles.tsj"));
   Tileset *player_tiles = tileset_load(&app, asset_path("player_tiles.tsj"));
@@ -70,36 +71,48 @@ int main(int argc, char *argv[]) {
   map_init(&map, map_tiles, asset_path("home.tmj"));
 
   then = SDL_GetTicks();
-  NetPacket send_p;
   NetPacket recv_p;
-
-  // Send create player packet
-  send_p.type = CONNECT;
-  network_send(&send_p);
+  NetState state = {0};
+  uint32_t player_id = 0;
   struct Entity *player_list = NULL;
   int player_list_size = 0;
 
-  while (1) {
-    if (network_service(&recv_p) == 0) {
+  while (app.running) {
+    if (network_service(&recv_p, &state) == 0) {
+      if (recv_p.type == HOST_CONNECT) {
+        log_info("Connected to host");
+        player_id = recv_p.id;
+        struct Entity *p = player_get();
+        p->id = player_id;
+        network_player_connect(recv_p.id);
+      }
       if (recv_p.type == CONNECT) {
-        bool found = false;
-        for (int i = 0; i < player_list_size; i++) {
-          if (recv_p.id == player_list[i].id && recv_p.id != net_id) {
-            found = true;
+        // Check if player id is mine
+        if (recv_p.id != player_id) {
+          bool found = false;
+          for (int i = 0; i < player_list_size; i++) {
+            if (recv_p.id == player_list[i].id) {
+              found = true;
+              break;
+            }
           }
-        }
-        if (!found) {
-          player_list = realloc(player_list,
-                                sizeof(struct Entity) * (player_list_size + 1));
-          player_list[player_list_size].id = recv_p.id;
-          player_list_size++;
-          log_debug("Received connect packet %u", recv_p.id);
+          if (!found) {
+            player_list = realloc(player_list, sizeof(struct Entity) *
+                                                   (player_list_size + 1));
+            player_list[player_list_size].id = recv_p.id;
+            player_list_size++;
+            log_debug("Added player %u", recv_p.id);
+          }
+          log_debug("Player list size: %d", player_list_size);
         }
       }
       if (recv_p.type == MOVE) {
-        if (player_list_size > 0) {
+        if (recv_p.id != player_id) {
+          log_debug("Received move packet %d", recv_p.id);
           for (int i = 0; i < player_list_size; i++) {
             if (player_list[i].id == recv_p.id) {
+              log_debug("Updated player %u %d %d", recv_p.id, recv_p.x,
+                        recv_p.y);
               player_list[i].x = recv_p.x;
               player_list[i].y = recv_p.y;
               player_list[i].facing = recv_p.facing;
@@ -112,16 +125,12 @@ int main(int argc, char *argv[]) {
     draw_prepare_scene(&app, camera.target);
     input_handle(&app);
     player_handle(&app, &map, &camera);
-    struct Entity *e = player_get();
-    send_p.type = MOVE;
-    send_p.x = e->x;
-    send_p.y = e->y;
-    send_p.facing = e->facing;
-    network_send(&send_p);
+    network_send_player_pos(player_get());
     map_draw(&app, &map);
     player_draw(&app);
     if (player_list_size > 0) {
       for (int i = 0; i < player_list_size; i++) {
+        // log_debug("Drawing player %u", player_list[i].id);
         entity_draw(&app, player_tiles, &player_list[i]);
       }
     }
@@ -143,6 +152,6 @@ int main(int argc, char *argv[]) {
   IMG_Quit();
   SDL_Quit();
   network_destroy();
-
+  free(player_list);
   return 0;
 }

@@ -426,9 +426,13 @@ void tileset_render_tile(App *app, Tileset *tileset, int tile_id,
 
 void tileset_free(Tileset *tiles) {
   // Free tileset tiles
-  for (int i = 0; i < tiles->num_tiles; i++) {
-    free(tiles->tiles[i].image);
-    free(tiles->tiles[i].type);
+  for (int i = 0; i < tiles->tile_count; i++) {
+    if (tiles->tiles[i].image != NULL) {
+      free(tiles->tiles[i].image);
+    }
+    if (tiles->tiles[i].type != NULL) {
+      free(tiles->tiles[i].type);
+    }
     // Free properties
     for (int j = 0; j < tiles->tiles[i].property_count; j++) {
       if (tiles->tiles[i].properties[j].name != NULL) {
@@ -441,7 +445,7 @@ void tileset_free(Tileset *tiles) {
         free(tiles->tiles[i].properties[j].propertytype);
       }
       if (tiles->tiles[i].properties[j].string_value != NULL) {
-        free(tiles->tiles[i].properties[j].string_value);
+        // free(tiles->tiles[i].properties[j].string_value);
       }
     }
     if (tiles->tiles[i].properties != NULL) {

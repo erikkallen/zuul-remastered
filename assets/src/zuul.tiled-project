@@ -11,5 +11,15 @@
     "properties": [
     ],
     "propertyTypes": [
+        {
+            "id": 1,
+            "name": "tile_type",
+            "storageType": "int",
+            "type": "enum",
+            "values": [
+                "COLLISION"
+            ],
+            "valuesAsFlags": false
+        }
     ]
 }
