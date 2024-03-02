@@ -14,7 +14,7 @@ ENetPeer *peer = {0};
 
 uint32_t net_id = 0;
 
-uint32_t network_init() {
+uint32_t network_init(char *host, uint16_t port) {
   if (enet_initialize() != 0) {
     fprintf(stderr, "An error occurred while initializing ENet.\n");
     return 0;
@@ -33,8 +33,8 @@ uint32_t network_init() {
 
   ENetAddress address = {0};
   /* Connect to some.server.net:1234. */
-  enet_address_set_host(&address, "127.0.0.1");
-  address.port = 7777;
+  enet_address_set_host(&address, host);
+  address.port = port;
   /* Initiate the connection, allocating the two channels 0 and 1. */
   peer = enet_host_connect(client, &address, 2, 0);
   if (peer == NULL) {

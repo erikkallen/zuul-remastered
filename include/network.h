@@ -30,7 +30,7 @@ typedef struct NetState {
   int connected;
 } NetState;
 
-uint32_t network_init();
+uint32_t network_init(char *host, uint16_t port);
 void network_destroy();
 int network_service(NetPacket *p, NetState *s);
 void network_send(NetPacket *p);
