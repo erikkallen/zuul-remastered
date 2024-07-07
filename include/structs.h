@@ -1,14 +1,13 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 #include "defs.h"
-#include "input.h"
+#include "map.h"
 #include "tileset.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_image.h>
 
 #ifndef ENTITY_H
 #define ENTITY_H
 
-struct Entity
-{
+struct Entity {
   int id;
   int x;
   int y;
@@ -21,8 +20,9 @@ struct Entity
   int health;
   int facing;
   int move_speed;
-  Tileset* tileset;
-  struct Entity* next;
+  Tileset *tileset;
+  struct Entity *next;
+  const char *map_name;
 };
 
 #endif

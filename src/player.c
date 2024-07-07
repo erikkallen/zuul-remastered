@@ -32,7 +32,6 @@ void collision_callback(Property *property, void *data) {
   // Load new map
   Map *map = (Map *)data;
   // Save tileset and property value before beeing freed
-  Tileset *tileset = map->tileset;
   int to_x, to_y;
   char asset_name[100];
   // Get x an y from property
@@ -45,7 +44,7 @@ void collision_callback(Property *property, void *data) {
     char *map_path = asset_path(asset_name);
     // log_debug("Map width: %d height: %d", map->width, map->height);
     map_free(map);
-    map_init(map, tileset, map_path);
+    map_init(map, map_path);
     // log_debug("Map width: %d height: %d", map->width, map->height);
     // log_debug("Player x: %d y: %d", player.x, player.y);
 

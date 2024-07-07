@@ -63,6 +63,7 @@ int network_send_player_pos(struct Entity *player) {
   move_p.y = player->y;
   move_p.facing = player->facing;
   move_p.move_speed = player->move_speed;
+  move_p.map = player->map;
   network_send(&move_p);
   return 0;
 }

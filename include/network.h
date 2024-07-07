@@ -22,6 +22,7 @@ typedef struct NetPacket {
   int x;
   int y;
   int move_speed;
+  Map *map;
 
 } NetPacket;
 

@@ -167,7 +167,7 @@ static void tileset_parse_animation(const cJSON *j_tile, Tile *tile) {
 * @return A pointer to the loaded tileset
 
 */
-Tileset *tileset_load(App *app, const char *filename) {
+Tileset *tileset_load(const char *filename) {
   Tileset *tileset = calloc(1, sizeof(Tileset));
   // Read map file into buffer
   FILE *fp = fopen(filename, "r");
@@ -314,10 +314,10 @@ Tileset *tileset_load(App *app, const char *filename) {
            j_tilecount->valueint, filename, fsize);
   tileset->rows = tileset->num_tiles / tileset->columns;
   // Load tileset texture
-  log_info("Loading tileset texture: %s", j_image->valuestring);
-  tileset->texture =
-      IMG_LoadTexture(app->renderer, asset_path(j_image->valuestring));
-  SDL_assert(tileset->texture != NULL);
+  // log_info("Loading tileset texture: %s", j_image->valuestring);
+  // tileset->texture =
+  //    IMG_LoadTexture(app->renderer, asset_path(j_image->valuestring));
+  // SDL_assert(tileset->texture != NULL);
 
   cJSON_Delete(tile_json);
   free(string);
@@ -357,8 +357,9 @@ Tile *tileset_get_tile_by_id(Tileset *tileset, int tile_id, bool local) {
   return NULL;
 }
 
-void tileset_render_tile(App *app, Tileset *tileset, int tile_id,
-                         bool local_tile_id, int x, int y, bool animated) {
+void tileset_render_tile(SDL_Renderer *renderer, SDL_Texture *texture,
+                         Tileset *tileset, int tile_id, bool local_tile_id,
+                         int x, int y, bool animated) {
   if (tile_id == 0 && !local_tile_id) {
     // Skip rendering global empty tiles
     return;
@@ -393,7 +394,6 @@ void tileset_render_tile(App *app, Tileset *tileset, int tile_id,
   int spacing = tileset->spacing;
   int tile_x_px = tile_x * (tile_width + spacing) + margin;
   int tile_y_px = tile_y * (tile_height + spacing) + margin;
-  SDL_Texture *texture = tileset->texture;
 
   // Setup atlasimage source and destination
   src.x = tile_x_px;
@@ -421,7 +421,7 @@ void tileset_render_tile(App *app, Tileset *tileset, int tile_id,
   // log_debug("Rendering tile %d pos src: [%d %d] dst: [%d %d] col: %d",
   // tileid, tile_x_px, tile_y_px, x, y, columns);
 
-  SDL_RenderCopyEx(app->renderer, texture, &src, &dest, 0, NULL, flip);
+  SDL_RenderCopyEx(renderer, texture, &src, &dest, 0, NULL, flip);
 }
 
 void tileset_free(Tileset *tiles) {
@@ -468,7 +468,7 @@ void tileset_free(Tileset *tiles) {
       free(tiles->tiles[i].objectgroup);
     }
   }
-  SDL_DestroyTexture(tiles->texture);
+  // SDL_DestroyTexture(tiles->texture);
   free(tiles->tiles);
   free(tiles);
 }

@@ -5,15 +5,15 @@ fs = import('fs')
 base_dir = meson.current_source_dir()
 incdir = include_directories('include', 'lib/log.c/src', 'lib/hshg/c', 'lib/hashmap.c')
 
-sdl2_dep = dependency('sdl2')
-sdl2_image_dep = dependency('SDL2_image')
-sdl2_ttf_dep = dependency('SDL2_ttf')
+sdl3_dep = dependency('sdl3')
+#sdl3_image_dep = dependency('SDL3_image')
+#sdl3_ttf_dep = dependency('SDL3_ttf')
 cjson_dep = dependency('libcjson')
 cc = meson.get_compiler('c')
 m_dep = cc.find_library('m', required : true)
 valgrind = find_program('valgrind', required: false)
 
-deps = [sdl2_dep, sdl2_image_dep, sdl2_ttf_dep, cjson_dep, m_dep]
+deps = [sdl3_dep, cjson_dep, m_dep]
 
 sources = files('src/main.c', 'lib/log.c/src/log.c', 'src/network.c', 'src/draw.c', 'src/init.c', 'src/input.c', 'src/player.c', 'src/map.c', 'src/tileset.c', 'lib/hshg/c/hshg.c', 'lib/hashmap.c/hashmap.c', 'src/assets.c')
 server_sources = files('src/server.c', 'lib/log.c/src/log.c')

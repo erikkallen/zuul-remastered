@@ -108,15 +108,15 @@ int main(int argc, char *argv[]) {
     network_init(*host, *port);
   }
 
-  Tileset *map_tiles = tileset_load(&app, asset_path("map_tiles.tsj"));
-  Tileset *player_tiles = tileset_load(&app, asset_path("player_tiles.tsj"));
+  Tileset *player_tiles = tileset_load(asset_path("player_tiles.tsj"));
   Tileset *net_player_tiles =
-      tileset_load(&app, asset_path("player_tiles_entire_outfit_green.tsj"));
+      tileset_load(asset_path("player_tiles_entire_outfit_green.tsj"));
   Camera camera = make_camera(&app, 1280, 720);
   app.camera = &camera;
 
   player_init(&app, player_tiles);
-  map_init(&map, map_tiles, asset_path("home.tmj"));
+  map_init(&map, asset_path("home.tmj"));
+  struct Entity *p = player_get();
 
   then = SDL_GetTicks();
   NetPacket recv_p;
@@ -186,6 +186,7 @@ int main(int argc, char *argv[]) {
     if (network && player_list_size > 0) {
       for (int i = 0; i < player_list_size; i++) {
         // log_debug("Drawing player %u", player_list[i].id);
+        // Check if player is in the same room
         entity_draw(&app, net_player_tiles, &player_list[i]);
       }
     }

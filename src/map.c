@@ -1,4 +1,5 @@
 #include "map.h"
+#include "assets.h"
 #include "defs.h"
 #include "structs.h"
 #include "tileset.h"
@@ -182,6 +183,41 @@ int map_load(Map *map, const char *filename) {
     log_error("Failed to parse map json");
     exit(1);
   }
+  // Load tilesets
+  const cJSON *j_tilesets =
+      cJSON_GetObjectItemCaseSensitive(map_json, "tilesets");
+  if (!cJSON_IsArray(j_tilesets)) {
+    log_error("Failed to parse map tilesets");
+    exit(1);
+  }
+  const cJSON *j_tileset = NULL;
+  map->tileset_count = cJSON_GetArraySize(j_tilesets);
+  map->tilesets = calloc(map->tileset_count, sizeof(Tileset));
+  if (map->tilesets == NULL) {
+    log_error("Failed to allocate map tilesets");
+    exit(1);
+  }
+  int tileset_index = 0;
+  cJSON_ArrayForEach(j_tileset, j_tilesets) {
+    Tileset *tileset = &map->tilesets[tileset_index];
+    const cJSON *j_source =
+        cJSON_GetObjectItemCaseSensitive(j_tileset, "source");
+    if (!cJSON_IsString(j_source)) {
+      log_error("Failed to parse tileset source");
+      exit(1);
+    }
+    const cJSON *j_firstgid =
+        cJSON_GetObjectItemCaseSensitive(j_tileset, "firstgid");
+    if (!cJSON_IsNumber(j_firstgid)) {
+      log_error("Failed to parse tileset firstgid");
+      exit(1);
+    }
+
+    // Load tileset
+    char *tileset_path = asset_path(j_source->valuestring);
+    log_debug("Loading tileset: %s", tileset_path);
+    tileset = tileset_load(tileset_path);
+  }
   const cJSON *j_height = cJSON_GetObjectItemCaseSensitive(map_json, "height");
   if (!cJSON_IsNumber(j_height)) {
     log_error("Failed to parse map height");
@@ -259,10 +295,7 @@ int map_load(Map *map, const char *filename) {
 
 // Load map tiles using tiles.tsj json file for meta info
 
-void map_init(Map *map, Tileset *tileset, const char *filename) {
-  map->tileset = tileset;
-  map_load(map, filename);
-}
+void map_init(Map *map, const char *filename) { map_load(map, filename); }
 
 void map_draw_layer(App *app, Map *map, Layer *layer) {
   // Calculate start and end col and row pased on camera position
@@ -356,6 +389,10 @@ void map_free(Map *map) {
     }
   }
   free(map->layers);
+  // Free all tilesets
+  for (int i = 0; i < map->tileset_count; i++) {
+    tileset_free(&map->tilesets[i]);
+  }
 }
 
 uint32_t map_get_tile_id_at_x_y(Map *map, int layer_index, int x, int y) {
