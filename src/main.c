@@ -202,13 +202,14 @@ int main(int argc, char *argv[]) {
   player_free();
   tileset_free(player_tiles);
   tileset_free(map_tiles);
+  tileset_free(net_player_tiles);
   map_free(&map);
   asset_free();
   IMG_Quit();
   SDL_Quit();
   if (network) {
     network_destroy();
+    free(player_list);
   }
-  free(player_list);
   return 0;
 }

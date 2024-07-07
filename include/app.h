@@ -26,7 +26,7 @@ typedef struct {
   int key_pressed;
   int num_keys_pressed;
   const char *assets_path;
-  int running;
+  volatile int running;
 } App;
 
 #endif
