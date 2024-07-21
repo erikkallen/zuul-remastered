@@ -7,12 +7,10 @@
 typedef enum {
   ID,
   MOVE,
-  SHOOT,
-  HIT,
-  KILL,
   CONNECT,
   DISCONNECT,
-  HOST_CONNECT
+  HOST_CONNECT,
+  HOST_DISCONNECT
 } NetPacketType;
 
 typedef struct NetPacket {

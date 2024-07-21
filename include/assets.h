@@ -2,11 +2,10 @@
 #define ASSETS_H
 
 #include <stdint.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
-struct asset
-{
+struct asset {
     char *name;
     char *path;
     char *filename;

@@ -1,12 +1,12 @@
 #ifndef TILESET_H
 #define TILESET_H
 
-#include <stdint.h>
 #include <SDL2/SDL.h>
 #include <stdbool.h>
+#include <stdint.h>
 
-#include "defs.h"
 #include "app.h"
+#include "defs.h"
 
 // Bits on the far end of the 32-bit global tile ID are used for tile flags
 #define FLIPPED_HORIZONTALLY_FLAG 0x80000000
@@ -20,48 +20,41 @@
  * https://doc.mapeditor.org/en/stable/reference/json-map-format
  */
 
-typedef enum TileType
-{
+typedef enum TileType {
     TILE_TYPE_WATER,
     TILE_TYPE_IMAGE,
     TILE_TYPE_OBJECT
 } TileType;
 
-typedef struct Animation
-{
+typedef struct Animation {
     uint32_t current_frame;
     uint32_t last_tick;
 } Animation;
 
-typedef struct Frame
-{
+typedef struct Frame {
     int duration;
     int tileid;
 } Frame;
 
-typedef struct RenderFrame
-{
+typedef struct RenderFrame {
     uint32_t start_tick;
     int current_rect;
     uint32_t rect_count;
     SDL_Rect *rect;
 } RenderFrame;
-typedef struct AtlasImage
-{
+typedef struct AtlasImage {
     char filename[MAX_FILENAME_LENGTH];
     uint32_t frame_count;
     RenderFrame *frames;
-    
+
     SDL_Texture *texture;
 } AtlasImage;
 
-typedef struct Property
-{
+typedef struct Property {
     char *name;
     char *propertytype;
     char *type;
-    union
-    {
+    union {
         char *string_value;
         double number_value;
         bool bool_value;
@@ -71,104 +64,100 @@ typedef struct Property
     };
 } Property;
 
-typedef struct Chunk
-{
-    uint32_t* data; // Array of unsigned int (GIDs) or base64-encoded data
-    int height; // Height in tiles
-    int width; // Width in tiles
-    int x; // X coordinate in tiles
-    int y; // Y coordinate in tiles
+typedef struct Chunk {
+    uint32_t *data; // Array of unsigned int (GIDs) or base64-encoded data
+    int height;     // Height in tiles
+    int width;      // Width in tiles
+    int x;          // X coordinate in tiles
+    int y;          // Y coordinate in tiles
 } Chunk;
 
-typedef struct Point
-{
+typedef struct Point {
     double x; // X coordinate in pixels
     double y; // Y coordinate in pixels
 } Point;
 
-typedef struct Text
-{
+typedef struct Text {
     bool bold; // Whether to use a bold font (default: false)
-    char* color; // Hex-formatted color (#RRGGBB or #AARRGGBB) (default: #000000)
-    char* fontfamily; // Font family (default: sans-serif)
-    char* halign; // Horizontal alignment (center, right, justify or left (default))
-    bool italic; // Whether to use an italic font (default: false)
-    bool kerning; // Whether to use kerning when placing characters (default: true)
-    int pixelsize; // Pixel size of font (default: 16)
+    char
+        *color; // Hex-formatted color (#RRGGBB or #AARRGGBB) (default: #000000)
+    char *fontfamily; // Font family (default: sans-serif)
+    char *halign;     // Horizontal alignment (center, right, justify or left
+                      // (default))
+    bool italic;      // Whether to use an italic font (default: false)
+    bool kerning;   // Whether to use kerning when placing characters (default:
+                    // true)
+    int pixelsize;  // Pixel size of font (default: 16)
     bool strikeout; // Whether to strike out the text (default: false)
-    char* text; // Text
+    char *text;     // Text
     bool underline; // Whether to underline the text (default: false)
-    char* valign; // Vertical alignment (center, bottom or top (default))
-    bool wrap; // Whether the text is wrapped within the object bounds (default: false)
+    char *valign;   // Vertical alignment (center, bottom or top (default))
+    bool wrap; // Whether the text is wrapped within the object bounds (default:
+               // false)
 } Text;
 
-
-typedef struct Object
-{
-    bool ellipse; // Used to mark an object as an ellipse
-    int gid; // Global tile ID, only if object represents a tile
-    double height; // Height in pixels
-    int id; // Incremental ID, unique across all objects
-    char* name; // String assigned to name field in editor
-    bool point; // Used to mark an object as a point
-    Point* polygon; // Array of Points, in case the object is a polygon
-    Point* polyline; // Array of Points, in case the object is a polyline
+typedef struct Object {
+    bool ellipse;          // Used to mark an object as an ellipse
+    int gid;               // Global tile ID, only if object represents a tile
+    double height;         // Height in pixels
+    int id;                // Incremental ID, unique across all objects
+    char *name;            // String assigned to name field in editor
+    bool point;            // Used to mark an object as a point
+    Point *polygon;        // Array of Points, in case the object is a polygon
+    Point *polyline;       // Array of Points, in case the object is a polyline
     size_t property_count; // Number of Properties
-    Property* properties; // Array of Properties
-    double rotation; // Angle in degrees clockwise
-    char* template; // Reference to a template file, in case object is a template instance
-    Text* text; // Only used for text objects
-    char* type; // The class of the object (was saved as class in 1.9, optional)
+    Property *properties;  // Array of Properties
+    double rotation;       // Angle in degrees clockwise
+    char *template;        // Reference to a template file, in case object is a
+                           // template instance
+    Text *text;            // Only used for text objects
+    char *type; // The class of the object (was saved as class in 1.9, optional)
     bool visible; // Whether object is shown in editor
     double width; // Width in pixels
-    double x; // X coordinate in pixels
-    double y; // Y coordinate in pixels
+    double x;     // X coordinate in pixels
+    double y;     // Y coordinate in pixels
 } Object;
 
-
-
-typedef struct Layer
-{
+typedef struct Layer {
     uint32_t id;
     int32_t x;
     int32_t y;
     float opacity;
     // Additional fields
-    Chunk* array; // Array of chunks optional
+    Chunk *array;         // Array of chunks optional
     uint32_t array_count; // Array of chunks optional
-    char* class;
-    char* compression;
-    uint32_t* data;
-    char* draworder;
-    char* encoding;
+    char *class;
+    char *compression;
+    uint32_t *data;
+    char *draworder;
+    char *encoding;
     int height;
     int image;
     bool locked;
     struct Layer *layers; // Array of Layers
     uint32_t layer_count;
-    char* name;
+    char *name;
     size_t object_count;
-    Object* objects;
+    Object *objects;
     double offsetx;
     double offsety;
     double parallaxx;
     double parallaxy;
     size_t property_count;
-    struct Property* properties;
+    struct Property *properties;
     bool repeatx;
     bool repeaty;
     int startx;
     int starty;
-    char* tintcolor;
-    char* transparentcolor;
-    char* type;
+    char *tintcolor;
+    char *transparentcolor;
+    char *type;
     bool visible;
     int width;
 } Layer;
 
 // Still deciding on how to best parse/render this
-typedef struct Tile
-{
+typedef struct Tile {
     char *image; // Optional
 
     int id; // Local id
@@ -197,8 +186,7 @@ typedef struct Tile
     Property *properties;
 } Tile;
 
-typedef struct Tileset
-{
+typedef struct Tileset {
     uint32_t first_gid;
     char name[MAX_FILENAME_LENGTH];
     uint32_t columns;
@@ -217,8 +205,9 @@ typedef struct Tileset
     SDL_Texture *texture;
 } Tileset;
 
-Tileset * tileset_load(App * app, const char * filename);
+Tileset *tileset_load(App *app, const char *filename);
 void tileset_free(Tileset *tiles);
-void tileset_render_tile(App * app, Tileset * tileset, int tileid,bool local_tile_id, int x, int y, bool animated);
-Tile * tileset_get_tile_by_id(Tileset * tileset, int tile_id, bool local);
+void tileset_render_tile(App *app, Tileset *tileset, int tileid,
+                         bool local_tile_id, int x, int y, bool animated);
+Tile *tileset_get_tile_by_id(Tileset *tileset, int tile_id, bool local);
 #endif
